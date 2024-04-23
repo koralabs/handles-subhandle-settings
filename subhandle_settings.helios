@@ -1,0 +1,119 @@
+spending subhandle_settings
+
+enum Redeemer {
+    UPDATE_SETTINGS { 
+        handle: ByteArray 
+    }
+    MIGRATE { 
+        handle: ByteArray 
+    }
+}
+
+// sh_settings
+struct AdminSettings {
+    valid_contracts: []ByteArray
+    admin_creds: []ByteArray
+    base_price: Int
+    buy_down_prices: [][]Int
+}
+
+//(001) token
+struct Datum {
+    nft: SubHandleSettings
+    virtual: SubHandleSettings
+    buy_down_price: int
+    buy_down_paid: Int
+    agreed_terms: Data
+    migrate_sig_required: Boolean
+}
+
+struct SubHandleSettings {
+    public_minting_enabled: Boolean
+    pz_enabled: Boolean
+    tier_pricing: [][]Int
+    creator_defaults: Data
+    expires_slot: Int // 0 = never
+}
+
+const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
+const LBL_001: ByteArray = #00001070 // (001)
+const LBL_222: ByteArray = #000de140 // (222)
+const SETTINGS_HANDLE: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_222 + ("sh_settings".encode_utf8()))
+
+func is_valid_contract(hash: ValidatorHash, settings: AdminSettings) -> Bool {
+    assert(settings.valid_contracts.any((cred: ByteArray) -> Bool {
+        Credential::new_validator(hash) == Credential::new_validator(ValidatorHash::new(cred))
+    }), "Contract not found in valid contracts list");
+    true
+}
+
+func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Datum) {
+    // Load admin settings
+    admin_settings_opt: Option[TxInput] = ctx.tx.ref_inputs.find_safe((input: TxInput) -> Bool { 
+        input.output.value.get_safe(SETTINGS_HANDLE) == 1
+    });
+
+    // Load root handle settings
+    owner_settings_opt: Option[TxOutput] = ctx.tx.outputs.find_safe((output: TxOutput) -> Bool { 
+        output.value.get_safe(AssetClass::new(HANDLE_POLICY, LBL_001 + handle)) == 1
+    });
+    
+    assert(admin_settings_opt != Option[TxInput]::None, "AdminSettings reference input missing");
+    assert(owner_settings_opt != Option[TxOutput]::None, "Owner settings output missing");
+    
+    owner_setting_output: TxOutput = owner_settings_opt.unwrap();
+    admin_settings: AdminSettings = AdminSettings::from_data(admin_settings_opt.unwrap().output.datum.get_inline_data());
+
+    // Check sent to valid contract
+    assert(is_valid_contract(owner_setting_output.address.credential.switch{v: Validator => v.hash, else => error("Invalid contract address")}, admin_settings), "Owner settings not returned to valid contract");
+
+    (admin_settings, Datum::from_data(owner_setting_output.datum.get_inline_data()))
+}
+
+func get_owner_token(handle: ByteArray, ctx: ScriptContext) -> TxInput {
+    owner_token_opt: Option[TxInput] = ctx.tx.ref_inputs.find_safe((input: TxInput) -> Bool { 
+        input.output.value.get_safe(AssetClass::new(HANDLE_POLICY, LBL_222 + handle)) == 1
+    });
+    assert(owner_token_opt != Option[TxInput]::None, "Owner's handle missing from reference inputs");
+    owner_token_opt.unwrap()
+}
+
+func admin_has_signed_tx(settings: AdminSettings, ctx: ScriptContext) -> Bool {
+    assert(ctx.tx.signatories.length > 0 
+        && ctx.tx.signatories.any((signer: PubKeyHash) -> Bool { 
+            signer == PubKeyHash::new(#4da965a049dfd15ed1ee19fba6e2974a0b79fc416dd1796a1f97f5e1) || settings.admin_creds.any((admin: ByteArray) -> Bool {signer == PubKeyHash::new(admin)}) 
+        }), "Required admin signer(s) not present");
+    true
+}
+
+func owner_has_signed_tx(handle: ByteArray, ctx: ScriptContext) --> Bool { 
+    owner_token: TxInput = get_owner_token(handle, ctx);   
+    // Check if signed by owner
+    assert(ctx.tx.signatories.find_safe((pubkey: PubKeyHash) -> {
+        owner_token.output.address.credential.switch{ p: PubKey => p.hash, else => error("Invalid credential hash")} == pubkey
+    }) != Option[PubKeyHash]::None, "Missing root handle owner signature");
+    true
+}
+
+func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings: AdminSettings, owner_settings: Datum) -> Bool {
+    // Check if Owner Signature is required
+    owner_sig_required: Bool = owner_settings.get_safe("migrate_sig_required").switch{Some{req} => {Int::from_data(req) != 0}, else => {false}};
+    admin_has_signed_tx(settings, ctx) && (!owner_sig_required || owner_has_signed_tx(handle, ctx))
+}
+
+func main(datum: Datum, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
+    redeemer.switch {
+        r: UPDATE_SETTINGS => {
+            load_settings(r.handle, ctx);
+            owner_has_signed_tx(handle, ctx)
+        },
+        m: MIGRATE => {
+            (admin_settings: AdminSettings, owner_settings: Datum) = load_settings(m.handle, ctx);
+            assert(migration_signers_are_valid(m.handle, ctx, admin_settings, owner_settings), "Not a valid migration");
+            true
+        }
+        else => {
+            false
+        }
+    }
+}

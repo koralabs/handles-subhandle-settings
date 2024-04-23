@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "esModuleInterop": true,
+        "target": "ESNext",
+        "moduleResolution": "Node",
+        "outDir": "dist",
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "isolatedModules": false,
+        "strict": true,
+        "noImplicitAny": true,
+        "useUnknownInCatchVariables": false,
+        "inlineSourceMap": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "paths": {
+            "src/*": ["./src/*"]
+        },
+        "strictPropertyInitialization": false
+    },
+    "ts-node": {
+        "esm": true
+    },
+    "lib": ["esnext"],
+    "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
