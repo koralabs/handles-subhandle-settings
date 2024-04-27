@@ -8,11 +8,9 @@
     },
     "license": "unlicense",
     "dependencies": {
-        "@hyperionbt/helios": "0.16.6",
-        "@koralabs/kora-labs-common": "^4.0.4",
-        "@koralabs/kora-labs-contract-testing": "file:../kora-labs-contract-testing/lib",
-        "@stricahq/bip32ed25519": "^1.0.4",
-        "bip39": "^3.1.0"
+        "@hyperionbt/helios": "0.16.7",
+        "@koralabs/kora-labs-common": "^4.0.7",
+        "@koralabs/kora-labs-contract-testing": "file:../kora-labs-contract-testing/lib"
     },
     "devDependencies": {
         "@types/node": "^18.0",

@@ -17,22 +17,22 @@ struct AdminSettings {
     buy_down_prices: [][]Int
 }
 
+struct SubHandleSettings {
+    public_minting_enabled: Bool
+    pz_enabled: Bool
+    tier_pricing: [][]Int
+    creator_defaults: Data
+    expires_slot: Int // 0 = never
+}
+
 //(001) token
 struct Datum {
     nft: SubHandleSettings
     virtual: SubHandleSettings
-    buy_down_price: int
+    buy_down_price: Int
     buy_down_paid: Int
     agreed_terms: Data
-    migrate_sig_required: Boolean
-}
-
-struct SubHandleSettings {
-    public_minting_enabled: Boolean
-    pz_enabled: Boolean
-    tier_pricing: [][]Int
-    creator_defaults: Data
-    expires_slot: Int // 0 = never
+    migrate_sig_required: Bool
 }
 
 const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
@@ -47,7 +47,7 @@ func is_valid_contract(hash: ValidatorHash, settings: AdminSettings) -> Bool {
     true
 }
 
-func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Datum) {
+func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Datum, Bool) {
     // Load admin settings
     admin_settings_opt: Option[TxInput] = ctx.tx.ref_inputs.find_safe((input: TxInput) -> Bool { 
         input.output.value.get_safe(SETTINGS_HANDLE) == 1
@@ -67,7 +67,7 @@ func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Dat
     // Check sent to valid contract
     assert(is_valid_contract(owner_setting_output.address.credential.switch{v: Validator => v.hash, else => error("Invalid contract address")}, admin_settings), "Owner settings not returned to valid contract");
 
-    (admin_settings, Datum::from_data(owner_setting_output.datum.get_inline_data()))
+    (admin_settings, Datum::from_data(owner_setting_output.datum.get_inline_data()), true)
 }
 
 func get_owner_token(handle: ByteArray, ctx: ScriptContext) -> TxInput {
@@ -86,7 +86,7 @@ func admin_has_signed_tx(settings: AdminSettings, ctx: ScriptContext) -> Bool {
     true
 }
 
-func owner_has_signed_tx(handle: ByteArray, ctx: ScriptContext) --> Bool { 
+func owner_has_signed_tx(handle: ByteArray, ctx: ScriptContext) -> Bool { 
     owner_token: TxInput = get_owner_token(handle, ctx);   
     // Check if signed by owner
     assert(ctx.tx.signatories.find_safe((pubkey: PubKeyHash) -> {
@@ -97,21 +97,20 @@ func owner_has_signed_tx(handle: ByteArray, ctx: ScriptContext) --> Bool {
 
 func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings: AdminSettings, owner_settings: Datum) -> Bool {
     // Check if Owner Signature is required
-    owner_sig_required: Bool = owner_settings.get_safe("migrate_sig_required").switch{Some{req} => {Int::from_data(req) != 0}, else => {false}};
-    admin_has_signed_tx(settings, ctx) && (!owner_sig_required || owner_has_signed_tx(handle, ctx))
+    admin_has_signed_tx(settings, ctx) && (!owner_settings.migrate_sig_required || owner_has_signed_tx(handle, ctx))
 }
 
-func main(datum: Datum, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
+func main(_, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
     redeemer.switch {
         r: UPDATE_SETTINGS => {
-            load_settings(r.handle, ctx);
-            owner_has_signed_tx(handle, ctx)
+            (_, _, loaded: Bool) = load_settings(r.handle, ctx);
+            loaded && owner_has_signed_tx(r.handle, ctx)
         },
         m: MIGRATE => {
-            (admin_settings: AdminSettings, owner_settings: Datum) = load_settings(m.handle, ctx);
+            (admin_settings: AdminSettings, owner_settings: Datum, _) = load_settings(m.handle, ctx);
             assert(migration_signers_are_valid(m.handle, ctx, admin_settings, owner_settings), "Not a valid migration");
             true
-        }
+        },
         else => {
             false
         }
