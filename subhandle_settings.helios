@@ -32,7 +32,7 @@ struct Datum {
     buy_down_price: Int
     buy_down_paid: Int
     agreed_terms: Data
-    migrate_sig_required: Bool
+    migrate_sig_required: Int
 }
 
 const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
@@ -97,7 +97,7 @@ func owner_has_signed_tx(handle: ByteArray, ctx: ScriptContext) -> Bool {
 
 func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings: AdminSettings, owner_settings: Datum) -> Bool {
     // Check if Owner Signature is required
-    admin_has_signed_tx(settings, ctx) && (!owner_settings.migrate_sig_required || owner_has_signed_tx(handle, ctx))
+    admin_has_signed_tx(settings, ctx) && (owner_settings.migrate_sig_required == 0 || owner_has_signed_tx(handle, ctx))
 }
 
 func main(_, redeemer: Redeemer, ctx: ScriptContext) -> Bool {

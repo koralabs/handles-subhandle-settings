@@ -2,7 +2,7 @@ import * as helios from "@hyperionbt/helios";
 import { AssetNameLabel } from "@koralabs/kora-labs-common";
 import { Fixtures, convertJsontoCbor, getAddressAtDerivation, getNewFakeUtxoId, handlesPolicy } from "@koralabs/kora-labs-contract-testing";
 
-const rootHandleName = 'root_handle';
+export const rootHandleName = 'root_handle';
 export const shAdminHandle = `${AssetNameLabel.LBL_222}${Buffer.from('sh_settings').toString('hex')}`;
 export const rootHandle = `${AssetNameLabel.LBL_222}${Buffer.from(rootHandleName).toString('hex')}`;
 export const shSettingsHandle = `${AssetNameLabel.LBL_001}${Buffer.from(rootHandleName).toString('hex')}`;
@@ -31,11 +31,11 @@ export class SubHandleSettingsFixtures extends Fixtures {
             [[1, 20000000]],
             '',
             0
-    ],
+        ],
         10000000,
         100000000000,
         '',
-        true
+        false
     ]
     shSettingsCbor: string;
     scriptAddress: helios.Address;
@@ -52,9 +52,7 @@ export class SubHandleSettingsFixtures extends Fixtures {
         this.redeemer = helios.UplcData.fromCbor(redeemerCbor);
         (this.adminSettings[0] as string[]).push(`0x${this.validatorHash.hex}`);
         (this.adminSettings[1] as string[]).push(`0x${adminKeyHex.hex}`);
-        console.log(this.adminSettings);
         this.adminSettingsCbor = await convertJsontoCbor(this.adminSettings);
-        console.log(this.adminSettingsCbor)
         this.shSettingsCbor = await convertJsontoCbor(this.shSettings);
         this.inputs = [
             new helios.TxInput(new helios.TxOutputId(getNewFakeUtxoId()), new helios.TxOutput(
