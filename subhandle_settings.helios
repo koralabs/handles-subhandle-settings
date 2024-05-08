@@ -32,6 +32,7 @@ struct Datum {
     buy_down_price: Int
     buy_down_paid: Int
     agreed_terms: Data
+    payment_address: ByteArray
     migrate_sig_required: Int
 }
 
