@@ -14,9 +14,7 @@
         "inlineSourceMap": true,
         "resolveJsonModule": true,
         "skipLibCheck": true,
-        "paths": {
-            "src/*": ["./src/*"]
-        },
+        "allowJs": true,
         "strictPropertyInitialization": false
     },
     "ts-node": {

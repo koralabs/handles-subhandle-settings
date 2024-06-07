@@ -1,4 +1,4 @@
-import * as helios from "@hyperionbt/helios";
+import * as helios from "@koralabs/helios";
 import { AssetNameLabel } from "@koralabs/kora-labs-common";
 import { Fixtures, convertJsontoCbor, getAddressAtDerivation, getNewFakeUtxoId, handlesPolicy } from "@koralabs/kora-labs-contract-testing";
 

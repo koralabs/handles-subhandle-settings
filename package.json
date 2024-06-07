@@ -7,12 +7,10 @@
         "test": "tsx -r dotenv/config tests/tests.ts"
     },
     "license": "unlicense",
-    "dependencies": {
-        "@hyperionbt/helios": "0.16.7",
-        "@koralabs/kora-labs-common": "^4.0.7",
-        "@koralabs/kora-labs-contract-testing": "file:../kora-labs-contract-testing/lib"
-    },
     "devDependencies": {
+        "@koralabs/helios": "0.16.8-1",
+        "@koralabs/kora-labs-common": "^4.0.7",
+        "@koralabs/kora-labs-contract-testing": "0.0.2",
         "@types/node": "^20.0",
         "dotenv": "^16.4.5",
         "tsx": "^4.7.0"

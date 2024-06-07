@@ -26,7 +26,7 @@ struct SubHandleSettings {
 }
 
 //(001) token
-struct Datum {
+struct OwnerSettings {
     nft: SubHandleSettings
     virtual: SubHandleSettings
     buy_down_price: Int
@@ -47,7 +47,7 @@ func is_valid_contract(hash: ValidatorHash, settings: AdminSettings) -> Bool {
     true
 }
 
-func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Datum, Bool) {
+func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, OwnerSettings, Bool) {
     // Load admin settings
     admin_settings_opt: Option[TxInput] = ctx.tx.ref_inputs.find_safe((input: TxInput) -> Bool { 
         input.output.value.get_safe(SETTINGS_HANDLE) == 1
@@ -67,7 +67,7 @@ func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Dat
     // Check sent to valid contract
     assert(is_valid_contract(owner_setting_output.address.credential.switch{v: Validator => v.hash, else => error("Invalid contract address")}, admin_settings), "Owner settings not returned to valid contract");
 
-    (admin_settings, Datum::from_data(owner_setting_output.datum.get_inline_data()), true)
+    (admin_settings, OwnerSettings::from_data(owner_setting_output.datum.get_inline_data()), true)
 }
 
 func get_owner_token(handle: ByteArray, ctx: ScriptContext) -> TxInput {
@@ -95,7 +95,7 @@ func owner_has_signed_tx(handle: ByteArray, ctx: ScriptContext) -> Bool {
     true
 }
 
-func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings: AdminSettings, owner_settings: Datum) -> Bool {
+func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings: AdminSettings, owner_settings: OwnerSettings) -> Bool {
     // Check if Owner Signature is required
     admin_has_signed_tx(settings, ctx) && (owner_settings.migrate_sig_required == 0 || owner_has_signed_tx(handle, ctx))
 }
@@ -107,7 +107,7 @@ func main(_, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
             loaded && owner_has_signed_tx(r.handle, ctx)
         },
         m: MIGRATE => {
-            (admin_settings: AdminSettings, owner_settings: Datum, _) = load_settings(m.handle, ctx);
+            (admin_settings: AdminSettings, owner_settings: OwnerSettings, _) = load_settings(m.handle, ctx);
             assert(migration_signers_are_valid(m.handle, ctx, admin_settings, owner_settings), "Not a valid migration");
             true
         },
