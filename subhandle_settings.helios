@@ -22,7 +22,7 @@ struct SubHandleSettings {
     pz_enabled: Bool
     tier_pricing: [][]Int
     creator_defaults: Data
-    expires_slot: Int // 0 = never
+    save_original_address: Int
 }
 
 //(001) token
@@ -34,7 +34,6 @@ struct OwnerSettings {
     agreed_terms: Data
     payment_address: ByteArray
     migrate_sig_required: Int
-    save_original_address: Int
 }
 
 const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
