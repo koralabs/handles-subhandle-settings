@@ -34,6 +34,7 @@ struct OwnerSettings {
     agreed_terms: Data
     payment_address: ByteArray
     migrate_sig_required: Int
+    save_original_address: Int
 }
 
 const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
@@ -105,6 +106,8 @@ func main(_, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
     redeemer.switch {
         r: UPDATE_SETTINGS => {
             (_, _, loaded: Bool) = load_settings(r.handle, ctx);
+            // should validate that tiers start with length 1 and are sorted correctly
+            // should validate the agreed_terms are present
             loaded && owner_has_signed_tx(r.handle, ctx)
         },
         m: MIGRATE => {
