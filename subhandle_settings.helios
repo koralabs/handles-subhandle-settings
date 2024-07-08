@@ -21,7 +21,7 @@ struct SubHandleSettings {
     public_minting_enabled: Bool
     pz_enabled: Bool
     tier_pricing: [][]Int
-    creator_defaults: Data
+    default_styles: Data
     save_original_address: Int
 }
 
@@ -31,9 +31,10 @@ struct OwnerSettings {
     virtual: SubHandleSettings
     buy_down_price: Int
     buy_down_paid: Int
+    buy_down_percent: Int
     agreed_terms: Data
-    payment_address: ByteArray
     migrate_sig_required: Int
+    payment_address: ByteArray
 }
 
 const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
