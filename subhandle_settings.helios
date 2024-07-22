@@ -13,13 +13,17 @@ enum Redeemer {
 struct AdminSettings {
     valid_contracts: []ByteArray
     admin_creds: []ByteArray
+    virtual_price: Int
     base_price: Int
     buy_down_prices: [][]Int
+    payment_address: ByteArray
+    expiry_duration: Int
+    renewal_window: Int
 }
 
 struct SubHandleSettings {
-    public_minting_enabled: Bool
-    pz_enabled: Bool
+    public_minting_enabled: Int
+    pz_enabled: Int
     tier_pricing: [][]Int
     default_styles: Data
     save_original_address: Int
