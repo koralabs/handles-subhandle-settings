@@ -31,7 +31,7 @@ const runTests = async (file: string) => {
         tester.test("MIGRATE", "Admin signed, settings load", new Test(program, async () => migrateFixtures)),
         tester.test("MIGRATE", "Owner sig required, didn't sign", new Test(program, async () => {
             const migrateFixtures = new SubHandleSettingsFixtures(contract.validatorHash);
-            (migrateFixtures as SubHandleSettingsFixtures).shSettings[5] = true;
+            (migrateFixtures as SubHandleSettingsFixtures).shSettings[5] = 1;
             await migrateFixtures.initialize();
             migrateFixtures.signatories = migrateFixtures.signatories?.slice(0,1);
             return migrateFixtures;

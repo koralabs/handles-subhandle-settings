@@ -13,8 +13,12 @@ export class SubHandleSettingsFixtures extends Fixtures {
     adminSettings = [
         [],
         [],
-        15000000,
-        [[100000, 10]]
+        5000000,
+        10000000,
+        [[100000, 10]],
+        '0x',
+        365 * 24 * 60 * 60 * 1000,
+        30 * 24 * 60 * 60 * 1000
     ] as unknown as (string[] | number | number[][])[]
     adminSettingsCbor: string;
     shSettings = [
@@ -34,8 +38,10 @@ export class SubHandleSettingsFixtures extends Fixtures {
         ],
         10000000,
         100000000000,
+        10,
         '',
-        false
+        0,
+        '0x'
     ]
     shSettingsCbor: string;
     scriptAddress: helios.Address;
@@ -56,6 +62,9 @@ export class SubHandleSettingsFixtures extends Fixtures {
         this.shSettingsCbor = await convertJsontoCbor(this.shSettings);
         this.inputs = [
             new helios.TxInput(new helios.TxOutputId(getNewFakeUtxoId()), new helios.TxOutput(
+                await getAddressAtDerivation(0), 
+                new helios.Value(BigInt(1), new helios.Assets([[handlesPolicy.hex, [[rootHandle, 1]]]])))),
+            new helios.TxInput(new helios.TxOutputId(getNewFakeUtxoId()), new helios.TxOutput(
                 this.scriptAddress,
                 new helios.Value(BigInt(200000000), new helios.Assets([[handlesPolicy.hex, [[shSettingsHandle, 1]]]])),
                 helios.Datum.inline(helios.UplcData.fromCbor(this.shSettingsCbor))
@@ -64,13 +73,13 @@ export class SubHandleSettingsFixtures extends Fixtures {
         this.refInputs = [
             new helios.TxInput(new helios.TxOutputId(getNewFakeUtxoId()), new helios.TxOutput(
                 await getAddressAtDerivation(0), 
-                new helios.Value(BigInt(1), new helios.Assets([[handlesPolicy.hex, [[rootHandle, 1]]]])))),
-            new helios.TxInput(new helios.TxOutputId(getNewFakeUtxoId()), new helios.TxOutput(
-                await getAddressAtDerivation(0), 
                 new helios.Value(BigInt(1), new helios.Assets([[handlesPolicy.hex, [[shAdminHandle, 1]]]])),
                 helios.Datum.inline(helios.UplcData.fromCbor(this.adminSettingsCbor))))
         ];
         this.outputs = [
+            new helios.TxOutput(
+                await getAddressAtDerivation(0), 
+                new helios.Value(BigInt(1), new helios.Assets([[handlesPolicy.hex, [[rootHandle, 1]]]]))),
             new helios.TxOutput(
                 this.scriptAddress, 
                 new helios.Value(BigInt(1), new helios.Assets([[handlesPolicy.hex, [[shSettingsHandle, 1]]]])),

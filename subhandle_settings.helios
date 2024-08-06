@@ -77,10 +77,10 @@ func load_settings(handle: ByteArray, ctx: ScriptContext) -> (AdminSettings, Own
 }
 
 func get_owner_token(handle: ByteArray, ctx: ScriptContext) -> TxInput {
-    owner_token_opt: Option[TxInput] = ctx.tx.ref_inputs.find_safe((input: TxInput) -> Bool { 
+    owner_token_opt: Option[TxInput] = ctx.tx.inputs.find_safe((input: TxInput) -> Bool { 
         input.output.value.get_safe(AssetClass::new(HANDLE_POLICY, LBL_222 + handle)) == 1
     });
-    assert(owner_token_opt != Option[TxInput]::None, "Owner's handle missing from reference inputs");
+    assert(owner_token_opt != Option[TxInput]::None, "Owner's handle missing from inputs");
     owner_token_opt.unwrap()
 }
 
