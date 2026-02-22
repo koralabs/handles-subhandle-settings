@@ -28,6 +28,10 @@
   - `./test_coverage.sh`
 - Coverage artifact:
   - `test_coverage.report`
+- Guardrail behavior:
+  - runs `npm test` first,
+  - enforces >=90% lines/branches on measurable utility scope (`subhandleUtils.js`),
+  - emits `STATUS=partial` when scenario harness runtime cannot run deterministically in local environment.
 
 ## Known Test Runtime Constraint
 - Current `npm test` path can fail when upstream datum conversion endpoint returns unavailable responses during fixture initialization.
