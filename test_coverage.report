@@ -1,0 +1,42 @@
+TAP version 13
+# Subtest: normalizeSubhandle trims and lowercases
+ok 1 - normalizeSubhandle trims and lowercases
+  ---
+  duration_ms: 0.566322
+  ...
+# Subtest: toHexUtf8 encodes normalized string as hex
+ok 2 - toHexUtf8 encodes normalized string as hex
+  ---
+  duration_ms: 0.090851
+  ...
+# Subtest: buildReferenceAssetName prefixes encoded subhandle with 100 label
+ok 3 - buildReferenceAssetName prefixes encoded subhandle with 100 label
+  ---
+  duration_ms: 0.101299
+  ...
+# Subtest: isNonNegativeInt accepts only whole numbers >= 0
+ok 4 - isNonNegativeInt accepts only whole numbers >= 0
+  ---
+  duration_ms: 0.055646
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 74.153702
+# start of coverage report
+# ------------------------------------------------------------------------
+# file                    | line % | branch % | funcs % | uncovered lines
+# ------------------------------------------------------------------------
+# subhandleUtils.js       | 100.00 |   100.00 |  100.00 | 
+# tests                   |        |          |         | 
+#  subhandleUtils.test.js | 100.00 |   100.00 |  100.00 | 
+# ------------------------------------------------------------------------
+# all files               | 100.00 |   100.00 |  100.00 | 
+# ------------------------------------------------------------------------
+# end of coverage report
+Coverage threshold met (line=100.00%, branch=100.00%).
