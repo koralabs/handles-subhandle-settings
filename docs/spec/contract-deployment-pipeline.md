@@ -28,7 +28,7 @@ build:
   target: subhandle_settings.helios
   kind: validator
 subhandle_strategy:
-  namespace: handlecontracts
+  namespace: handlecontract
   format: contract_slug_ordinal
 settings:
   type: subhandle_settings
@@ -66,7 +66,7 @@ Deployment automation should:
 No deployment artifact should be created when desired and live state already match.
 
 ## SubHandle Rules
-- A script hash change requires a new SubHandle in the format `<contract_slug><ordinal>@handlecontracts`.
+- A script hash change requires a new SubHandle in the format `<contract_slug><ordinal>@handlecontract`.
 - A settings-only change reuses the current SubHandle and moves it forward with the settings UTxO.
 - The next ordinal must be derived from live chain state, not a repo-local counter.
 
@@ -88,7 +88,7 @@ The canonical observed-state artifact should be JSON and should include:
   "contract_slug": "subhandle-settings",
   "current_script_hash": "<hash>",
   "current_settings_utxo_ref": "<tx>#<ix>",
-  "current_subhandle": "subhandle-settings1@handlecontracts",
+  "current_subhandle": "subhandle-settings1@handlecontract",
   "settings": {
     "type": "subhandle_settings",
     "values": {}
