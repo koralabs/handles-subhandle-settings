@@ -9,4 +9,5 @@
 ## Spec
 - [Spec Index](./spec/index.md)
 - [Technical Spec](./spec/spec.md)
+- [Contract Deployment Pipeline](./spec/contract-deployment-pipeline.md)
 - [Datum Model](./spec/datum-model.md)
