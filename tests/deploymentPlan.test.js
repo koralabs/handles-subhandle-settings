@@ -12,10 +12,12 @@ import {
 const desiredState = {
   schemaVersion: 2,
   network: "preview",
-  contractSlug: "subhandle-settings",
-  deploymentHandleSlug: "subhdlstg",
+  contractSlug: "subh",
+  scriptType: "subh",
+  oldScriptType: "sub_handle_settings",
+  deploymentHandleSlug: "subh",
   build: {
-    target: "subhandle_settings.helios",
+    target: "subh.helios",
     kind: "validator",
     parameters: {},
   },
@@ -67,6 +69,7 @@ test("fetches live subhandle settings deployment state from the Handles API", as
   const requests = [];
   const live = await fetchLiveSubhandleSettingsDeploymentState({
     network: "preview",
+    scriptType: desiredState.oldScriptType ?? desiredState.scriptType,
     userAgent: "codex-test",
     fetchFn: async (url, init) => {
       requests.push({ url: String(url), headers: init?.headers });
@@ -121,12 +124,12 @@ test("builds a script-and-settings deployment plan when both drift", () => {
         },
       },
     },
-    nextSubhandle: "subhdlstg7@handlecontract",
+    nextSubhandle: "subh7@handlecontract",
   });
 
   assert.equal(plan.driftType, "script_hash_and_settings");
   assert.equal(plan.summaryJson.contracts[0].settings.diff_rows[0].handle_name, "sh_settings");
-  assert.equal(plan.summaryJson.contracts[0].subhandle.value, "subhdlstg7@handlecontract");
+  assert.equal(plan.summaryJson.contracts[0].subhandle.value, "subh7@handlecontract");
 });
 
 test("marks script drift for manual review when no replacement handle is resolved", () => {
@@ -149,21 +152,38 @@ test("discovers the next available subhandle settings contract SubHandle ordinal
   const requested = [];
   const subhandle = await discoverNextContractSubhandle({
     network: "preview",
-    deploymentHandleSlug: "subhdlstg",
+    deploymentHandleSlug: "subh",
     namespace: "handlecontract",
+    currentSubhandle: "subh2@handlecontract",
     userAgent: "codex-test",
     fetchFn: async (url) => {
       requested.push(String(url));
       return new Response("{}", {
-        status: String(url).endsWith("subhdlstg3%40handlecontract") ? 404 : 200,
+        status: String(url).endsWith("subh4%40handlecontract") ? 404 : 200,
       });
     },
   });
 
-  assert.equal(subhandle, "subhdlstg3@handlecontract");
+  assert.equal(subhandle, "subh3@handlecontract");
   assert.deepEqual(requested, [
-    "https://preview.api.handle.me/handles/subhdlstg1%40handlecontract",
-    "https://preview.api.handle.me/handles/subhdlstg2%40handlecontract",
-    "https://preview.api.handle.me/handles/subhdlstg3%40handlecontract",
+    "https://preview.api.handle.me/handles/subh1%40handlecontract",
+    "https://preview.api.handle.me/handles/subh2%40handlecontract",
+    "https://preview.api.handle.me/handles/subh3%40handlecontract",
+    "https://preview.api.handle.me/handles/subh4%40handlecontract",
   ]);
+});
+
+test("reuses an already minted subhandle-settings replacement handle", async () => {
+  const subhandle = await discoverNextContractSubhandle({
+    network: "preview",
+    deploymentHandleSlug: "subh",
+    namespace: "handlecontract",
+    currentSubhandle: "subhsetcont_003",
+    userAgent: "codex-test",
+    fetchFn: async (url) => new Response("{}", {
+      status: String(url).endsWith("subh2%40handlecontract") ? 404 : 200,
+    }),
+  });
+
+  assert.equal(subhandle, "subh1@handlecontract");
 });

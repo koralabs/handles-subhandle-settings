@@ -20,8 +20,10 @@ test("loads the preview desired deployment YAML fixture into the normalized shap
 
   assert.equal(state.schemaVersion, 2);
   assert.equal(state.network, "preview");
-  assert.equal(state.contractSlug, "subhandle-settings");
-  assert.equal(state.deploymentHandleSlug, "subhdlstg");
+  assert.equal(state.contractSlug, "subh");
+  assert.equal(state.scriptType, "subh");
+  assert.equal(state.oldScriptType, "sub_handle_settings");
+  assert.equal(state.deploymentHandleSlug, "subh");
   assert.deepEqual(state.assignedHandles.settings, ["sh_settings"]);
   assert.deepEqual(state.assignedHandles.scripts, ["subhsetcont_003"]);
   assert.equal(state.settings.values.sh_settings.virtual_price, 2000000);
@@ -51,10 +53,12 @@ test("rejects observed-only live fields inside desired deployment YAML", () => {
     () => parseDesiredDeploymentState(`
 schema_version: 2
 network: preview
-contract_slug: subhandle-settings
-deployment_handle_slug: subhdlstg
+contract_slug: subh
+script_type: subh
+old_script_type: sub_handle_settings
+deployment_handle_slug: subh
 build:
-  target: subhandle_settings.helios
+  target: subh.helios
   kind: validator
   parameters: {}
 subhandle_strategy:
@@ -87,10 +91,12 @@ test("rejects deployment handle slugs longer than 10 characters", () => {
     () => parseDesiredDeploymentState(`
 schema_version: 2
 network: preview
-contract_slug: subhandle-settings
+contract_slug: subh
+script_type: subh
+old_script_type: sub_handle_settings
 deployment_handle_slug: subhandleset
 build:
-  target: subhandle_settings.helios
+  target: subh.helios
   kind: validator
   parameters: {}
 subhandle_strategy:

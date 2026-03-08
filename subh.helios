@@ -1,4 +1,4 @@
-spending subhandle_settings
+spending subh
 
 enum Redeemer {
     UPDATE_SETTINGS { 

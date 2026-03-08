@@ -7,7 +7,7 @@ TOTAL_LINES_PCT=100.00
 TOTAL_BRANCHES_PCT=100.00
 STATUS=partial
 SOURCE_PATHS=subhandleUtils.js
-EXCLUDED_PATHS=subhandle_settings.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability
+EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability
 LANGUAGE_SUMMARY=nodejs-utils:lines=100.00,branches=100.00,tool=node-test-coverage,status=pass;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=na,note=scenario-tests-require-stable-upstream-datum-fixture-responses
 
 === RAW_OUTPUT_NPM_TEST ===

@@ -3,7 +3,7 @@
 ## Architecture
 
 ### Core Assets
-- Validator source: `subhandle_settings.helios`
+- Validator source: `subh.helios`
 - Test harness:
   - `tests/tests.ts`
   - `tests/sub_handle_settings_fixtures.ts`

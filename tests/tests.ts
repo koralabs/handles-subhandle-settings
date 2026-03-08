@@ -41,5 +41,5 @@ const runTests = async (file: string) => {
 }
 
 (async()=> {
-    await runTests('./subhandle_settings.helios')
+    await runTests('./subh.helios')
 })();

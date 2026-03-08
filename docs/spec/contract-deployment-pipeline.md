@@ -5,6 +5,11 @@ This repo owns the desired on-chain deployment state for subhandle settings cont
 
 The repo should define what ought to be live on `preview`, `preprod`, and `mainnet`. It should not be treated as the storage location for volatile live references such as current settings UTxO refs.
 
+Canonical slug naming for this repo follows the shared rule in `kora-bot/docs/spec/contract-deployment-pipeline.md`:
+- `<app><[ord|mnt|ref|roy]><[mpt]>`
+- `contract_slug`, `script_type`, and `deployment_handle_slug` must match
+- `old_script_type` is legacy migration-only
+
 ## State Model
 - Desired state lives in committed YAML files in this repo.
 - Observed live state is read from chain UTxOs and deployed script hashes.
@@ -23,10 +28,12 @@ Each file should contain stable desired state only:
 ```yaml
 schema_version: 2
 network: preview
-contract_slug: subhandle-settings
-deployment_handle_slug: subhdlstg
+contract_slug: subh
+script_type: subh
+old_script_type: sub_handle_settings
+deployment_handle_slug: subh
 build:
-  target: subhandle_settings.helios
+  target: subh.helios
   kind: validator
 subhandle_strategy:
   namespace: handlecontract
@@ -48,6 +55,7 @@ Required stable fields:
 - `schema_version`
 - `network`
 - `contract_slug`
+- `script_type`
 - `deployment_handle_slug`
 - `build.target`
 - `build.kind`
@@ -106,10 +114,10 @@ The canonical observed-state artifact should be JSON and should include:
   "schema_version": 1,
   "repo": "handles-subhandle-settings",
   "network": "preview",
-  "contract_slug": "subhandle-settings",
+  "contract_slug": "subh",
   "current_script_hash": "<hash>",
   "current_settings_utxo_ref": "<tx>#<ix>",
-  "current_subhandle": "subhdlstg1@handlecontract",
+  "current_subhandle": "subh1@handlecontract",
   "settings": {
     "type": "subhandle_settings",
     "values": {

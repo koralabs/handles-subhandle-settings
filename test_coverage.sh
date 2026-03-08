@@ -62,7 +62,7 @@ fi
   echo "TOTAL_BRANCHES_PCT=$BRANCH_COVERAGE"
   echo "STATUS=$STATUS"
   echo "SOURCE_PATHS=subhandleUtils.js"
-  echo "EXCLUDED_PATHS=subhandle_settings.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability"
+  echo "EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability"
   echo "LANGUAGE_SUMMARY=nodejs-utils:lines=$LINE_COVERAGE,branches=$BRANCH_COVERAGE,tool=node-test-coverage,status=$UTILS_STATUS;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=$NPM_TEST_STATUS,note=$NPM_TEST_NOTE"
   echo
   echo "=== RAW_OUTPUT_NPM_TEST ==="

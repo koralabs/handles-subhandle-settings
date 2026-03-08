@@ -1,9 +1,11 @@
 schema_version: 2
 network: mainnet
-contract_slug: subhandle-settings
-deployment_handle_slug: subhdlstg
+contract_slug: subh
+script_type: subh
+old_script_type: sub_handle_settings
+deployment_handle_slug: subh
 build:
-  target: subhandle_settings.helios
+  target: subh.helios
   kind: validator
   parameters: {}
 subhandle_strategy:

@@ -4,6 +4,7 @@ import path from "node:path";
 import {
   buildExpectedSubhandleSettingsScriptHash,
   buildSubhandleSettingsDeploymentPlan,
+  discoverNextContractSubhandle,
   fetchLiveSubhandleSettingsDeploymentState,
 } from "../deploymentPlan.js";
 import { loadDesiredDeploymentState } from "../deploymentState.js";
@@ -31,11 +32,25 @@ const main = async () => {
 
   const desired = await loadDesiredDeploymentState(args.desired);
   const userAgent = (process.env.KORA_USER_AGENT || "kora-contract-deployments/1.0").trim();
+  const expectedScriptHash = buildExpectedSubhandleSettingsScriptHash();
+  const live = await fetchLiveSubhandleSettingsDeploymentState({
+    network: desired.network,
+    scriptType: desired.oldScriptType ?? desired.scriptType,
+    userAgent,
+  });
   const plan = buildSubhandleSettingsDeploymentPlan({
     desired,
-    expectedScriptHash: buildExpectedSubhandleSettingsScriptHash(),
-    live: await fetchLiveSubhandleSettingsDeploymentState({ network: desired.network, userAgent }),
-    nextSubhandle: null,
+    expectedScriptHash,
+    live,
+    nextSubhandle: live.currentScriptHash === expectedScriptHash
+      ? null
+      : await discoverNextContractSubhandle({
+          network: desired.network,
+          deploymentHandleSlug: desired.deploymentHandleSlug,
+          namespace: desired.subhandleStrategy.namespace,
+          currentSubhandle: live.currentSubhandle,
+          userAgent,
+        }),
   });
 
   await fs.mkdir(args["artifacts-dir"], { recursive: true });
