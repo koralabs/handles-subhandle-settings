@@ -22,6 +22,36 @@ export const buildExpectedSubhandleSettingsScriptHash = ({
   compileFn = compileSubhandleSettingsValidator,
 } = {}) => String(compileFn()).trim();
 
+export const decodeShSettingsDatum = (datumHex) => {
+  const fields = requireListData(
+    helios.UplcData.fromCbor(stripHexPrefix(datumHex)),
+    "sh_settings datum"
+  );
+  if (fields.length !== 8) {
+    throw new Error(`sh_settings datum must contain 8 fields, received ${fields.length}`);
+  }
+  return {
+    valid_contracts: requireListData(fields[0], "valid_contracts").map((value) =>
+      requireByteArray(value, "valid_contracts item")
+    ),
+    admin_creds: requireListData(fields[1], "admin_creds").map((value) =>
+      requireByteArray(value, "admin_creds item")
+    ),
+    virtual_price: requireInt(fields[2], "virtual_price"),
+    base_price: requireInt(fields[3], "base_price"),
+    buy_down_prices: requireListData(fields[4], "buy_down_prices").map((pair, index) => {
+      const values = requireListData(pair, `buy_down_prices[${index}]`);
+      if (values.length !== 2) {
+        throw new Error(`buy_down_prices[${index}] must contain exactly two ints`);
+      }
+      return values.map((value, offset) => requireInt(value, `buy_down_prices[${index}][${offset}]`));
+    }),
+    payment_address: requireByteArray(fields[5], "payment_address"),
+    expiry_duration: requireInt(fields[6], "expiry_duration"),
+    renewal_window: requireInt(fields[7], "renewal_window"),
+  };
+};
+
 export const fetchLiveSubhandleSettingsDeploymentState = async ({
   network,
   userAgent,
@@ -61,21 +91,21 @@ export const fetchLiveSubhandleSettingsDeploymentState = async ({
     currentSubhandle: String(scriptPayload.handle ?? "").trim() || null,
     currentSettingsUtxoRefs: currentSettingsUtxoRef ? { [SETTINGS_HANDLE]: currentSettingsUtxoRef } : {},
     settings: {
-      [SETTINGS_HANDLE]: (await datumResponse.text()).trim(),
+      [SETTINGS_HANDLE]: decodeShSettingsDatum((await datumResponse.text()).trim()),
     },
   };
 };
 
 export const discoverNextContractSubhandle = async ({
   network,
-  contractSlug,
+  deploymentHandleSlug,
   namespace,
   userAgent,
   fetchFn = fetch,
 }) => {
   const baseUrl = handlesApiBaseUrlForNetwork(network);
   for (let ordinal = 1; ordinal < 10000; ordinal += 1) {
-    const candidate = `${contractSlug}${ordinal}@${namespace}`;
+    const candidate = `${deploymentHandleSlug}${ordinal}@${namespace}`;
     const response = await fetchFn(
       `${baseUrl}/handles/${encodeURIComponent(candidate)}`,
       { headers: { "User-Agent": userAgent } }
@@ -85,7 +115,7 @@ export const discoverNextContractSubhandle = async ({
       throw new Error(`failed to probe SubHandle ${candidate}: HTTP ${response.status}`);
     }
   }
-  throw new Error(`no available SubHandle found for ${contractSlug}@${namespace}`);
+  throw new Error(`no available SubHandle found for ${deploymentHandleSlug}@${namespace}`);
 };
 
 export const buildSubhandleSettingsDeploymentPlan = ({
@@ -94,16 +124,18 @@ export const buildSubhandleSettingsDeploymentPlan = ({
   live,
   nextSubhandle,
 }) => {
-  const settingsDiffRows = live.settings.sh_settings === desired.settings.values.sh_settings
-    ? []
-    : [{
+  const settingsChanged =
+    stableStringify(live.settings.sh_settings) !==
+    stableStringify(desired.settings.values.sh_settings);
+  const settingsDiffRows = settingsChanged
+    ? [{
         handle_name: SETTINGS_HANDLE,
         current: live.settings.sh_settings,
         desired: desired.settings.values.sh_settings,
-      }];
+      }]
+    : [];
 
   const scriptChanged = live.currentScriptHash !== expectedScriptHash;
-  const settingsChanged = settingsDiffRows.length > 0;
   const driftType = scriptChanged && settingsChanged
     ? "script_hash_and_settings"
     : scriptChanged
@@ -113,7 +145,7 @@ export const buildSubhandleSettingsDeploymentPlan = ({
         : "no_change";
 
   const plannedSubhandle = scriptChanged
-    ? nextSubhandle || live.currentSubhandle || `${desired.contractSlug}@${desired.subhandleStrategy.namespace}`
+    ? nextSubhandle || live.currentSubhandle || `${desired.deploymentHandleSlug}@${desired.subhandleStrategy.namespace}`
     : live.currentSubhandle;
   if (!plannedSubhandle) {
     throw new Error("deployment plan requires a resolved SubHandle");
@@ -126,19 +158,26 @@ export const buildSubhandleSettingsDeploymentPlan = ({
     contract_slug: desired.contractSlug,
     expected_script_hash: expectedScriptHash,
     expected_subhandle: plannedSubhandle,
+    assigned_handles: {
+      settings: desired.assignedHandles.settings,
+      scripts: scriptChanged ? [plannedSubhandle] : desired.assignedHandles.scripts,
+    },
     settings: {
       type: desired.settings.type,
       values: desired.settings.values,
+      ignored_paths: desired.ignoredSettings,
     },
   };
 
-  const planId = crypto.createHash("sha256").update(JSON.stringify({
+  const planId = crypto.createHash("sha256").update(stableStringify({
     network: desired.network,
     contract_slug: desired.contractSlug,
     current_script_hash: live.currentScriptHash,
     expected_script_hash: expectedScriptHash,
     current_settings: live.settings,
     desired_settings: desired.settings.values,
+    assigned_handles: desired.assignedHandles,
+    ignored_settings: desired.ignoredSettings,
     planned_subhandle: plannedSubhandle,
   })).digest("hex");
 
@@ -157,6 +196,7 @@ export const buildSubhandleSettingsDeploymentPlan = ({
         type: desired.settings.type,
         diff_rows: settingsDiffRows,
         desired_values: desired.settings.values,
+        ignored_paths: desired.ignoredSettings,
       },
       subhandle: {
         action: subhandleAction,
@@ -203,3 +243,42 @@ export const buildSubhandleSettingsDeploymentPlan = ({
     },
   };
 };
+
+const requireListData = (value, label) => {
+  if (!value || !Array.isArray(value.list)) {
+    throw new Error(`${label} must decode to a list`);
+  }
+  return value.list;
+};
+
+const requireByteArray = (value, label) => {
+  if (!value || typeof value.hex !== "string") {
+    throw new Error(`${label} must decode to a byte array`);
+  }
+  return value.hex;
+};
+
+const requireInt = (value, label) => {
+  if (!value || (typeof value.value !== "bigint" && typeof value.value !== "number")) {
+    throw new Error(`${label} must decode to an int`);
+  }
+  return Number(value.value);
+};
+
+const stripHexPrefix = (value) => value.startsWith("0x") ? value.slice(2) : value;
+
+const normalizeStable = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(normalizeStable);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [key, normalizeStable(nested)])
+    );
+  }
+  return value;
+};
+
+const stableStringify = (value) => JSON.stringify(normalizeStable(value));

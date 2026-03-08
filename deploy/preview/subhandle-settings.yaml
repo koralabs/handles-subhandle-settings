@@ -1,6 +1,7 @@
-schema_version: 1
+schema_version: 2
 network: preview
 contract_slug: subhandle-settings
+deployment_handle_slug: subhdlstg
 build:
   target: subhandle_settings.helios
   kind: validator
@@ -8,7 +9,34 @@ build:
 subhandle_strategy:
   namespace: handlecontract
   format: contract_slug_ordinal
+assigned_handles:
+  settings:
+    - sh_settings
+  scripts:
+    - subhsetcont_003
+ignored_settings: []
 settings:
   type: subhandle_settings
   values:
-    sh_settings: 9f9f581cb026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465581c0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c581c020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0581cf8923bbf64b7b4409b56733c12406363faf40f51edb2be72fd4d2e09ff9f581cb026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465581c0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c581c020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0ff1a001e84801a004c4b409f9f1a3b9aca000aff9f1b00000002540be4001819ff9f1b0000000ba43b74001828ff9f1b000000174876e8001832ff9f1b000000746a5288001846ff9f1b000000e8d4a510001855ffff583930195bde3deacb613b7e9eb6280b14db4e353e475e96d19f3f7a5e2d66195bde3deacb613b7e9eb6280b14db4e353e475e96d19f3f7a5e2d661b0000000757b12c001b0000000757ac9820ff
+    sh_settings:
+      valid_contracts:
+        - b026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465
+        - 0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c
+        - 020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0
+        - f8923bbf64b7b4409b56733c12406363faf40f51edb2be72fd4d2e09
+      admin_creds:
+        - b026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465
+        - 0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c
+        - 020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0
+      virtual_price: 2000000
+      base_price: 5000000
+      buy_down_prices:
+        - [1000000000, 10]
+        - [10000000000, 25]
+        - [50000000000, 40]
+        - [100000000000, 50]
+        - [500000000000, 70]
+        - [1000000000000, 85]
+      payment_address: 30195bde3deacb613b7e9eb6280b14db4e353e475e96d19f3f7a5e2d66195bde3deacb613b7e9eb6280b14db4e353e475e96d19f3f7a5e2d66
+      expiry_duration: 31536000000
+      renewal_window: 31535700000

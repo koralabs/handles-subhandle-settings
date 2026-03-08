@@ -21,29 +21,41 @@ deploy/<network>/<contract_slug>.yaml
 Each file should contain stable desired state only:
 
 ```yaml
-schema_version: 1
+schema_version: 2
 network: preview
 contract_slug: subhandle-settings
+deployment_handle_slug: subhdlstg
 build:
   target: subhandle_settings.helios
   kind: validator
 subhandle_strategy:
   namespace: handlecontract
   format: contract_slug_ordinal
+assigned_handles:
+  settings:
+    - sh_settings
+  scripts:
+    - subhsetcont_003
+ignored_settings: []
 settings:
   type: subhandle_settings
   values:
-    # repo-owned datum/settings values only
+    sh_settings:
+      # decoded comparable AdminSettings fields only
 ```
 
 Required stable fields:
 - `schema_version`
 - `network`
 - `contract_slug`
+- `deployment_handle_slug`
 - `build.target`
 - `build.kind`
 - `subhandle_strategy.namespace`
 - `subhandle_strategy.format`
+- `assigned_handles.settings`
+- `assigned_handles.scripts`
+- `ignored_settings`
 - `settings.type`
 - `settings.values`
 
@@ -54,19 +66,22 @@ Observed-only fields that must not be committed into desired-state YAML:
 - `observed_at`
 - `last_deployed_tx_hash`
 
-The initial bootstrap job may populate these files from current chain state, but it must strip live-only references before commit.
+Normalization rules for this repo:
+- `sh_settings` is stored as decoded named `AdminSettings` fields, not raw CBOR.
+- `deployment_handle_slug` must be 10 characters or fewer and must not contain separators.
 
 ## Drift Detection
 Deployment automation should:
 - build the contract and derive the expected script hash,
 - load desired YAML from this repo,
 - read live chain state for the contract settings UTxO,
+- normalize the live `sh_settings` CBOR into the same YAML shape,
 - classify drift as `script_hash_only`, `settings_only`, or `script_hash_and_settings`.
 
 No deployment artifact should be created when desired and live state already match.
 
 ## SubHandle Rules
-- A script hash change requires a new SubHandle in the format `<contract_slug><ordinal>@handlecontract`.
+- A script hash change requires a new SubHandle in the format `<deployment_handle_slug><ordinal>@handlecontract`.
 - A settings-only change reuses the current SubHandle and moves it forward with the settings UTxO.
 - The next ordinal must be derived from live chain state, not a repo-local counter.
 
@@ -94,10 +109,12 @@ The canonical observed-state artifact should be JSON and should include:
   "contract_slug": "subhandle-settings",
   "current_script_hash": "<hash>",
   "current_settings_utxo_ref": "<tx>#<ix>",
-  "current_subhandle": "subhandle-settings1@handlecontract",
+  "current_subhandle": "subhdlstg1@handlecontract",
   "settings": {
     "type": "subhandle_settings",
-    "values": {}
+    "values": {
+      "sh_settings": {}
+    }
   },
   "observed_at": "<iso8601>"
 }
