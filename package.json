@@ -20,5 +20,8 @@
     },
     "overrides": {
         "bn.js": "5.2.3"
+    },
+    "dependencies": {
+        "yaml": "^2.8.2"
     }
 }
