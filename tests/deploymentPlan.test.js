@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildSubhandleSettingsDeploymentTxArtifact,
   buildExpectedSubhandleSettingsScriptHash,
   buildSubhandleSettingsDeploymentPlan,
   decodeShSettingsDatum,
   discoverNextContractSubhandle,
   fetchLiveSubhandleSettingsDeploymentState,
+  renderTransactionOrderMarkdown,
 } from "../deploymentPlan.js";
 
 const desiredState = {
@@ -186,4 +188,74 @@ test("reuses an already minted subhandle-settings replacement handle", async () 
   });
 
   assert.equal(subhandle, "subh1@handlecontract");
+});
+
+test("builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx", async () => {
+  const tx = {
+    witnessCount: 0,
+    witnesses: {
+      addDummySignatures(count) {
+        tx.witnessCount += count;
+      },
+      removeDummySignatures(count) {
+        tx.witnessCount -= count;
+      },
+    },
+    toCbor() {
+      return tx.witnessCount === 1 ? [0x84, 0x01, 0x02, 0x03] : [0x84, 0x01, 0x02];
+    },
+  };
+
+  const artifact = await buildSubhandleSettingsDeploymentTxArtifact({
+    desired: desiredState,
+    handleName: "subh7@handlecontract",
+    changeAddress: "addr_test1qpzxs06vn7qagrqsm7wtquul8s5drxzk82wwr9qx3886m8lv7yv3mukuwdkne3v3va8dgd3xjkzqv90pu9gsc8hrl2xs9yqkej",
+    cborUtxos: ["abcd"],
+    buildTxFn: async () => tx,
+    fetchNetworkParametersFn: async () => ({ maxTxSize: 10 }),
+  });
+
+  assert.deepEqual([...artifact.cborBytes], [0x84, 0x01, 0x02]);
+  assert.equal(artifact.cborHex, "840102");
+  assert.equal(artifact.estimatedSignedTxSize, 4);
+  assert.equal(artifact.maxTxSize, 10);
+});
+
+test("rejects unsigned deployment tx artifacts that would exceed max tx size after signing", async () => {
+  const tx = {
+    witnessCount: 0,
+    witnesses: {
+      addDummySignatures(count) {
+        tx.witnessCount += count;
+      },
+      removeDummySignatures(count) {
+        tx.witnessCount -= count;
+      },
+    },
+    toCbor() {
+      return tx.witnessCount === 1 ? new Array(301).fill(0x80) : new Array(200).fill(0x80);
+    },
+  };
+
+  await assert.rejects(
+    buildSubhandleSettingsDeploymentTxArtifact({
+      desired: desiredState,
+      handleName: "subh7@handlecontract",
+      changeAddress: "addr_test1qpzxs06vn7qagrqsm7wtquul8s5drxzk82wwr9qx3886m8lv7yv3mukuwdkne3v3va8dgd3xjkzqv90pu9gsc8hrl2xs9yqkej",
+      cborUtxos: ["abcd"],
+      buildTxFn: async () => tx,
+      fetchNetworkParametersFn: async () => ({ maxTxSize: 300 }),
+    }),
+    /too large after adding 1 required signature/i
+  );
+});
+
+test("renders transaction order markdown from generated artifacts", () => {
+  assert.deepEqual(renderTransactionOrderMarkdown(["tx-01.cbor", "tx-02.cbor"]), [
+    "- `tx-01.cbor`",
+    "- `tx-02.cbor`",
+  ]);
+  assert.deepEqual(renderTransactionOrderMarkdown([]), [
+    "- Planner can emit `tx-XX.cbor` artifacts when `--change-address` and `--cbor-utxos-json` are supplied.",
+  ]);
 });

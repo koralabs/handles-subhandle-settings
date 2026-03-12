@@ -5,7 +5,7 @@ This repo owns the desired on-chain deployment state for subhandle settings cont
 
 The repo should define what ought to be live on `preview`, `preprod`, and `mainnet`. It should not be treated as the storage location for volatile live references such as current settings UTxO refs.
 
-Canonical slug naming for this repo follows the shared rule in `kora-bot/docs/spec/contract-deployment-pipeline.md`:
+Canonical slug naming for this repo follows the shared rule in `adahandle-deployments/docs/contract-deployment-pipeline.md`:
 - `<app><[ord|mnt|ref|roy]><[mpt]>`
 - `contract_slug`, `script_type`, and `deployment_handle_slug` must match
 - `old_script_type` is legacy migration-only
@@ -104,8 +104,10 @@ The deployment workflow for this repo should emit:
 Current rollout behavior:
 - push and pull request runs emit `deployment-plan.json`, `summary.json`, and `summary.md` for every committed `deploy/<network>/subhandle-settings.yaml`
 - manual dispatch may target one desired-state YAML via `desired_path`
-- no unsigned CBOR artifact is emitted yet for this repo; the workflow is currently informational-only until a repo-native tx builder is added
-- if the live script hash differs, the summary may mark the deployment handle step as manual review because the repo is still published behind legacy names such as `subhsetcont_003` and `sub_settings_01` rather than a fully auto-allocatable `*.handlecontract` sequence
+- when the detected drift is script-hash-only and the planner is given both `change_address` and `cbor_utxos_json`, it emits raw `tx-XX.cbor` artifacts plus matching `tx-XX.cbor.hex` sidecars
+- unsigned tx generation is intentionally skipped when settings drift is present
+- the planner estimates signed tx size by adding one dummy witness and fails before artifact upload if that signed size would exceed protocol `maxTxSize`
+- if no replacement deployment handle is resolved, the summary still marks that step as manual review
 
 The canonical observed-state artifact should be JSON and should include:
 

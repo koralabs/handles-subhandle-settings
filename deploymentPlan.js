@@ -1,7 +1,12 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { Buffer } from "node:buffer";
 
 import * as helios from "@koralabs/helios";
+import {
+  buildReferenceScriptDeploymentTx,
+  fetchNetworkParameters,
+} from "./deploymentTx.js";
 
 const REPO_NAME = "handles-subhandle-settings";
 const SETTINGS_HANDLE = "sh_settings";
@@ -21,6 +26,11 @@ export const compileSubhandleSettingsValidator = () => {
 export const buildExpectedSubhandleSettingsScriptHash = ({
   compileFn = compileSubhandleSettingsValidator,
 } = {}) => String(compileFn()).trim();
+
+export const renderTransactionOrderMarkdown = (transactionOrder) =>
+  transactionOrder.length > 0
+    ? transactionOrder.map((fileName) => `- \`${fileName}\``)
+    : ["- Planner can emit `tx-XX.cbor` artifacts when `--change-address` and `--cbor-utxos-json` are supplied."];
 
 export const decodeShSettingsDatum = (datumHex) => {
   const fields = requireListData(
@@ -248,7 +258,7 @@ export const buildSubhandleSettingsDeploymentPlan = ({
     ...(settingsDiffRows.length > 0 ? ["- `sh_settings`"] : ["- No settings changes."]),
     "",
     "## Transaction Order",
-    "- No transaction artifact is generated for this repo yet.",
+    ...renderTransactionOrderMarkdown([]),
     ...(subhandleAction === "manual_review"
       ? ["- Script drift requires operator review of the replacement deployment handle namespace."]
       : []),
@@ -266,6 +276,41 @@ export const buildSubhandleSettingsDeploymentPlan = ({
       contracts: [expectedPostDeployState],
       transaction_order: [],
     },
+  };
+};
+
+export const buildSubhandleSettingsDeploymentTxArtifact = async ({
+  desired,
+  handleName,
+  changeAddress,
+  cborUtxos,
+  buildTxFn = buildReferenceScriptDeploymentTx,
+  fetchNetworkParametersFn = fetchNetworkParameters,
+}) => {
+  const tx = await buildTxFn({
+    network: desired.network,
+    handleName,
+    changeAddress,
+    cborUtxos,
+  });
+  tx.witnesses.addDummySignatures(1);
+  const estimatedSignedTxSize = tx.toCbor().length;
+  tx.witnesses.removeDummySignatures(1);
+
+  const networkParams = await fetchNetworkParametersFn(desired.network);
+  const maxTxSize = networkParams.maxTxSize;
+  if (estimatedSignedTxSize > maxTxSize) {
+    throw new Error(
+      `unsigned deployment tx for ${handleName} is too large after adding 1 required signature: ${estimatedSignedTxSize} > ${maxTxSize}`
+    );
+  }
+
+  const cborBytes = Buffer.from(tx.toCbor());
+  return {
+    cborBytes,
+    cborHex: cborBytes.toString("hex"),
+    estimatedSignedTxSize,
+    maxTxSize,
   };
 };
 
