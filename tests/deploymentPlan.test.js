@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 import {
@@ -150,44 +153,36 @@ test("marks script drift for manual review when no replacement handle is resolve
   assert.match(plan.summaryMarkdown, /operator review/i);
 });
 
-test("discovers the next available subhandle settings contract SubHandle ordinal from the short deployment slug", async () => {
-  const requested = [];
-  const subhandle = await discoverNextContractSubhandle({
-    network: "preview",
-    deploymentHandleSlug: "subh",
-    namespace: "handlecontract",
-    currentSubhandle: "subh2@handlecontract",
-    userAgent: "codex-test",
-    fetchFn: async (url) => {
-      requested.push(String(url));
-      return new Response("{}", {
-        status: String(url).endsWith("subh4%40handlecontract") ? 404 : 200,
-      });
-    },
-  });
-
-  assert.equal(subhandle, "subh3@handlecontract");
-  assert.deepEqual(requested, [
-    "https://preview.api.handle.me/handles/subh1%40handlecontract",
-    "https://preview.api.handle.me/handles/subh2%40handlecontract",
-    "https://preview.api.handle.me/handles/subh3%40handlecontract",
-    "https://preview.api.handle.me/handles/subh4%40handlecontract",
-  ]);
-});
-
-test("reuses an already minted subhandle-settings replacement handle", async () => {
-  const subhandle = await discoverNextContractSubhandle({
-    network: "preview",
-    deploymentHandleSlug: "subh",
-    namespace: "handlecontract",
-    currentSubhandle: "subhsetcont_003",
-    userAgent: "codex-test",
-    fetchFn: async (url) => new Response("{}", {
-      status: String(url).endsWith("subh2%40handlecontract") ? 404 : 200,
-    }),
-  });
-
-  assert.equal(subhandle, "subh1@handlecontract");
+test("discoverNextContractSubhandle delegates to the canonical Python helper", async () => {
+  // The discovery logic itself is owned by adahandle-deployments/common/discover_subhandles.py
+  // and tested at common/discover_subhandles_test.py. Here we only verify
+  // that the JS wrapper invokes the right script and returns its stdout.
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "discover-stub-"));
+  const stubPath = path.join(tmpDir, "discover_subhandles.py");
+  fs.writeFileSync(
+    stubPath,
+    "#!/usr/bin/env python3\n" +
+      "import sys\n" +
+      "for i, a in enumerate(sys.argv):\n" +
+      "  if a == '--slug': slug = sys.argv[i+1]\n" +
+      "print(f'{slug}1@handlecontract')\n",
+    { mode: 0o755 }
+  );
+  const origPath = process.env.DISCOVER_SUBHANDLES_PATH;
+  process.env.DISCOVER_SUBHANDLES_PATH = stubPath;
+  try {
+    const subhandle = await discoverNextContractSubhandle({
+      network: "preview",
+      deploymentHandleSlug: "subh",
+      namespace: "handlecontract",
+      currentSubhandle: null,
+      userAgent: "codex-test",
+    });
+    assert.equal(subhandle, "subh1@handlecontract");
+  } finally {
+    process.env.DISCOVER_SUBHANDLES_PATH = origPath;
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 });
 
 test("builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx", async () => {
