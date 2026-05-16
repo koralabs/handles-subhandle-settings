@@ -1,79 +1,249 @@
 FORMAT_VERSION=1
 REPO=handles-subhandle-settings
-TIMESTAMP_UTC=2026-02-22T20:24:35Z
+TIMESTAMP_UTC=2026-05-16T11:53:52Z
 THRESHOLD_LINES=90
 THRESHOLD_BRANCHES=90
-TOTAL_LINES_PCT=100.00
+TOTAL_LINES_PCT=99.15
 TOTAL_BRANCHES_PCT=100.00
-STATUS=partial
-SOURCE_PATHS=subhandleUtils.js
+STATUS=pass
+SOURCE_PATHS=subhandleUtils.js,deploymentTx.js
 EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability
-LANGUAGE_SUMMARY=nodejs-utils:lines=100.00,branches=100.00,tool=node-test-coverage,status=pass;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=na,note=scenario-tests-require-stable-upstream-datum-fixture-responses
+LANGUAGE_SUMMARY=nodejs-unit:source_paths=subhandleUtils.js,deploymentTx.js,lines=99.15,branches=100.00,tool=node-test-coverage,status=pass;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=pass,note=npm-test-succeeded
 
 === RAW_OUTPUT_NPM_TEST ===
 
 > cip-68-444-minting@1.0.0 test
-> tsx -r dotenv/config tests/tests.ts
+> node --test tests/*.test.js && tsx -r dotenv/config tests/tests.ts
 
-file:///home/jesse/src/koralabs/handles-subhandle-settings/node_modules/@koralabs/helios/helios.js:492
-		throw new Error(msg);
-		      ^
-
-Error: invalid hexstring "<html>
-<head><title>503 Service Temporarily Unavailable</title></head>
-<body>
-<center><h1>503 Service Temporarily Unavailable</h1></center>
-</body>
-</html>"
-    at assert (file:///home/jesse/src/koralabs/handles-subhandle-settings/node_modules/@koralabs/helios/helios.js:492:9)
-    at hexToBytes (file:///home/jesse/src/koralabs/handles-subhandle-settings/node_modules/@koralabs/helios/helios.js:860:3)
-    at UplcData.fromCbor (file:///home/jesse/src/koralabs/handles-subhandle-settings/node_modules/@koralabs/helios/helios.js:6228:29)
-    at SubHandleSettingsFixtures.initialize (/home/jesse/src/koralabs/handles-subhandle-settings/tests/sub_handle_settings_fixtures.ts:58:41)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async runTests (/home/jesse/src/koralabs/handles-subhandle-settings/tests/tests.ts:12:20)
-    at async <anonymous> (/home/jesse/src/koralabs/handles-subhandle-settings/tests/tests.ts:44:5)
-
-Node.js v22.13.1
-
-=== RAW_OUTPUT_NODE_SUBHANDLE_UTILS_COVERAGE ===
 TAP version 13
-# Subtest: normalizeSubhandle trims and lowercases
-ok 1 - normalizeSubhandle trims and lowercases
+# Subtest: expected script hash is read from the repo-native compile path
+ok 1 - expected script hash is read from the repo-native compile path
   ---
-  duration_ms: 0.452046
+  duration_ms: 1.087705
+  type: 'test'
+  ...
+# Subtest: decodes sh_settings CBOR into named YAML fields
+ok 2 - decodes sh_settings CBOR into named YAML fields
+  ---
+  duration_ms: 3.050091
+  type: 'test'
+  ...
+# Subtest: fetches live subhandle settings deployment state from the Handles API
+ok 3 - fetches live subhandle settings deployment state from the Handles API
+  ---
+  duration_ms: 16.934502
+  type: 'test'
+  ...
+# Subtest: builds a no-change deployment plan when live state matches the desired YAML
+ok 4 - builds a no-change deployment plan when live state matches the desired YAML
+  ---
+  duration_ms: 7.765455
+  type: 'test'
+  ...
+# Subtest: builds a script-and-settings deployment plan when both drift
+ok 5 - builds a script-and-settings deployment plan when both drift
+  ---
+  duration_ms: 0.326077
+  type: 'test'
+  ...
+# Subtest: marks script drift for manual review when no replacement handle is resolved
+ok 6 - marks script drift for manual review when no replacement handle is resolved
+  ---
+  duration_ms: 0.30073
+  type: 'test'
+  ...
+# Subtest: discovers the next available subhandle settings contract SubHandle ordinal from the short deployment slug
+ok 7 - discovers the next available subhandle settings contract SubHandle ordinal from the short deployment slug
+  ---
+  duration_ms: 1.296234
+  type: 'test'
+  ...
+# Subtest: reuses an already minted subhandle-settings replacement handle
+ok 8 - reuses an already minted subhandle-settings replacement handle
+  ---
+  duration_ms: 0.532282
+  type: 'test'
+  ...
+# Subtest: builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
+ok 9 - builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
+  ---
+  duration_ms: 0.486076
+  type: 'test'
+  ...
+# Subtest: rejects unsigned deployment tx artifacts that would exceed max tx size after signing
+ok 10 - rejects unsigned deployment tx artifacts that would exceed max tx size after signing
+  ---
+  duration_ms: 0.743233
+  type: 'test'
+  ...
+# Subtest: renders transaction order markdown from generated artifacts
+ok 11 - renders transaction order markdown from generated artifacts
+  ---
+  duration_ms: 0.164917
+  type: 'test'
+  ...
+# Subtest: loads the preview desired deployment YAML fixture into the normalized shape
+ok 12 - loads the preview desired deployment YAML fixture into the normalized shape
+  ---
+  duration_ms: 15.036336
+  type: 'test'
+  ...
+# Subtest: loads the preprod and mainnet desired deployment YAML fixtures
+ok 13 - loads the preprod and mainnet desired deployment YAML fixtures
+  ---
+  duration_ms: 4.775044
+  type: 'test'
+  ...
+# Subtest: rejects observed-only live fields inside desired deployment YAML
+ok 14 - rejects observed-only live fields inside desired deployment YAML
+  ---
+  duration_ms: 1.824859
+  type: 'test'
+  ...
+# Subtest: rejects deployment handle slugs longer than 10 characters
+ok 15 - rejects deployment handle slugs longer than 10 characters
+  ---
+  duration_ms: 1.168055
+  type: 'test'
+  ...
+# Subtest: fetchNetworkParameters loads the requested Helios network config
+ok 16 - fetchNetworkParameters loads the requested Helios network config
+  ---
+  duration_ms: 1.472934
+  type: 'test'
+  ...
+# Subtest: deployment tx generation rejects script addresses as change addresses
+ok 17 - deployment tx generation rejects script addresses as change addresses
+  ---
+  duration_ms: 1.724171
+  type: 'test'
+  ...
+# Subtest: deployment tx generation rejects wallets missing the deployment handle input
+ok 18 - deployment tx generation rejects wallets missing the deployment handle input
+  ---
+  duration_ms: 2.582661
+  type: 'test'
+  ...
+# Subtest: deployment tx generation finalizes with the handle input selected and spare inputs preserved
+ok 19 - deployment tx generation finalizes with the handle input selected and spare inputs preserved
+  ---
+  duration_ms: 2.835953
+  type: 'test'
+  ...
+# Subtest: normalizeSubhandle trims and lowercases
+ok 20 - normalizeSubhandle trims and lowercases
+  ---
+  duration_ms: 0.787297
+  type: 'test'
   ...
 # Subtest: toHexUtf8 encodes normalized string as hex
-ok 2 - toHexUtf8 encodes normalized string as hex
+ok 21 - toHexUtf8 encodes normalized string as hex
   ---
-  duration_ms: 0.204947
+  duration_ms: 0.153657
+  type: 'test'
   ...
 # Subtest: buildReferenceAssetName prefixes encoded subhandle with 100 label
-ok 3 - buildReferenceAssetName prefixes encoded subhandle with 100 label
+ok 22 - buildReferenceAssetName prefixes encoded subhandle with 100 label
   ---
-  duration_ms: 0.329097
+  duration_ms: 0.138928
+  type: 'test'
   ...
 # Subtest: isNonNegativeInt accepts only whole numbers >= 0
-ok 4 - isNonNegativeInt accepts only whole numbers >= 0
+ok 23 - isNonNegativeInt accepts only whole numbers >= 0
   ---
-  duration_ms: 0.072156
+  duration_ms: 0.132677
+  type: 'test'
   ...
-1..4
-# tests 4
+1..23
+# tests 23
 # suites 0
-# pass 4
+# pass 23
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 79.041712
+# duration_ms 117.677083
+Warning: way too much collateral
+Warning: way too much collateral
+[32m*success* - APPROVE - MIGRATE                   'Admin signed, settings load'[0m ( mem:333480, cpu:114580058, size:528 )
+[32m*success* - APPROVE - UPDATE_SETTINGS           'Owner signed, settings load'[0m ( mem:347808, cpu:125536448, size:528 )
+INFO (subh:98:11) Missing root handle owner signature
+[32m*success* - DENY    - UPDATE_SETTINGS           'Owner didn't sign'[0m ( mem:0, cpu:0, size:609 )
+INFO (subh:98:11) Missing root handle owner signature
+[32m*success* - DENY    - MIGRATE                   'Owner sig required, didn't sign'[0m ( mem:0, cpu:0, size:609 )
+[34m** SUMMARY **[0m
+[34m    4 total tests[0m
+[32m    4 successful[0m
+
+=== RAW_OUTPUT_NODE_UNIT_COVERAGE ===
+TAP version 13
+# Subtest: fetchNetworkParameters loads the requested Helios network config
+ok 1 - fetchNetworkParameters loads the requested Helios network config
+  ---
+  duration_ms: 1.703553
+  type: 'test'
+  ...
+# Subtest: deployment tx generation rejects script addresses as change addresses
+ok 2 - deployment tx generation rejects script addresses as change addresses
+  ---
+  duration_ms: 1.70703
+  type: 'test'
+  ...
+# Subtest: deployment tx generation rejects wallets missing the deployment handle input
+ok 3 - deployment tx generation rejects wallets missing the deployment handle input
+  ---
+  duration_ms: 2.869625
+  type: 'test'
+  ...
+# Subtest: deployment tx generation finalizes with the handle input selected and spare inputs preserved
+ok 4 - deployment tx generation finalizes with the handle input selected and spare inputs preserved
+  ---
+  duration_ms: 2.966275
+  type: 'test'
+  ...
+# Subtest: normalizeSubhandle trims and lowercases
+ok 5 - normalizeSubhandle trims and lowercases
+  ---
+  duration_ms: 0.832141
+  type: 'test'
+  ...
+# Subtest: toHexUtf8 encodes normalized string as hex
+ok 6 - toHexUtf8 encodes normalized string as hex
+  ---
+  duration_ms: 0.233736
+  type: 'test'
+  ...
+# Subtest: buildReferenceAssetName prefixes encoded subhandle with 100 label
+ok 7 - buildReferenceAssetName prefixes encoded subhandle with 100 label
+  ---
+  duration_ms: 0.126084
+  type: 'test'
+  ...
+# Subtest: isNonNegativeInt accepts only whole numbers >= 0
+ok 8 - isNonNegativeInt accepts only whole numbers >= 0
+  ---
+  duration_ms: 0.103003
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97.960739
 # start of coverage report
 # ------------------------------------------------------------------------
 # file                    | line % | branch % | funcs % | uncovered lines
 # ------------------------------------------------------------------------
+# deploymentTx.js         | 100.00 |   100.00 |   83.33 | 
 # subhandleUtils.js       | 100.00 |   100.00 |  100.00 | 
 # tests                   |        |          |         | 
+#  deploymentTx.test.js   |  98.59 |   100.00 |   88.89 | 68 86
 #  subhandleUtils.test.js | 100.00 |   100.00 |  100.00 | 
 # ------------------------------------------------------------------------
-# all files               | 100.00 |   100.00 |  100.00 | 
+# all files               |  99.15 |   100.00 |   90.63 | 
 # ------------------------------------------------------------------------
 # end of coverage report

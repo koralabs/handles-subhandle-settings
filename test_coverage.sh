@@ -23,10 +23,10 @@ if ! npm test > "$TMP_DIR/npm.test.log" 2>&1; then
   fi
 fi
 
-node --test --experimental-test-coverage tests/subhandleUtils.test.js > "$TMP_DIR/subhandle-utils.coverage.log" 2>&1
+node --test --experimental-test-coverage tests/subhandleUtils.test.js tests/deploymentTx.test.js > "$TMP_DIR/node-unit.coverage.log" 2>&1
 
 read -r LINE_COVERAGE BRANCH_COVERAGE < <(
-  grep -E "all files" "$TMP_DIR/subhandle-utils.coverage.log" | tail -n 1 | awk -F'\\|' '{
+  grep -E "all files" "$TMP_DIR/node-unit.coverage.log" | tail -n 1 | awk -F'\\|' '{
     line=$2; branch=$3;
     gsub(/[%[:space:]]/, "", line);
     gsub(/[%[:space:]]/, "", branch);
@@ -61,20 +61,20 @@ fi
   echo "TOTAL_LINES_PCT=$LINE_COVERAGE"
   echo "TOTAL_BRANCHES_PCT=$BRANCH_COVERAGE"
   echo "STATUS=$STATUS"
-  echo "SOURCE_PATHS=subhandleUtils.js"
+  echo "SOURCE_PATHS=subhandleUtils.js,deploymentTx.js"
   echo "EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability"
-  echo "LANGUAGE_SUMMARY=nodejs-utils:lines=$LINE_COVERAGE,branches=$BRANCH_COVERAGE,tool=node-test-coverage,status=$UTILS_STATUS;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=$NPM_TEST_STATUS,note=$NPM_TEST_NOTE"
+  echo "LANGUAGE_SUMMARY=nodejs-unit:source_paths=subhandleUtils.js,deploymentTx.js,lines=$LINE_COVERAGE,branches=$BRANCH_COVERAGE,tool=node-test-coverage,status=$UTILS_STATUS;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=$NPM_TEST_STATUS,note=$NPM_TEST_NOTE"
   echo
   echo "=== RAW_OUTPUT_NPM_TEST ==="
   cat "$TMP_DIR/npm.test.log"
   echo
-  echo "=== RAW_OUTPUT_NODE_SUBHANDLE_UTILS_COVERAGE ==="
-  cat "$TMP_DIR/subhandle-utils.coverage.log"
+  echo "=== RAW_OUTPUT_NODE_UNIT_COVERAGE ==="
+  cat "$TMP_DIR/node-unit.coverage.log"
 } > "$REPORT_FILE"
 
 if [[ "$STATUS" != "pass" ]]; then
   if [[ "$STATUS" == "partial" ]]; then
-    echo "Coverage thresholds met for measurable utility scope (line=${LINE_COVERAGE}%, branch=${BRANCH_COVERAGE}%) with scenario tests recorded as NA." >&2
+    echo "Coverage thresholds met for measurable unit scope (line=${LINE_COVERAGE}%, branch=${BRANCH_COVERAGE}%) with scenario tests recorded as NA." >&2
     exit 0
   fi
   echo "Coverage threshold not met (line=${LINE_COVERAGE}%, branch=${BRANCH_COVERAGE}%)." >&2
