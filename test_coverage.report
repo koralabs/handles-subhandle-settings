@@ -1,249 +1,464 @@
 FORMAT_VERSION=1
 REPO=handles-subhandle-settings
-TIMESTAMP_UTC=2026-05-16T11:53:52Z
+TIMESTAMP_UTC=2026-06-30T18:05:15Z
 THRESHOLD_LINES=90
 THRESHOLD_BRANCHES=90
-TOTAL_LINES_PCT=99.15
-TOTAL_BRANCHES_PCT=100.00
+TOTAL_LINES_PCT=98.53
+TOTAL_BRANCHES_PCT=93.58
 STATUS=pass
-SOURCE_PATHS=subhandleUtils.js,deploymentTx.js
-EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability
-LANGUAGE_SUMMARY=nodejs-unit:source_paths=subhandleUtils.js,deploymentTx.js,lines=99.15,branches=100.00,tool=node-test-coverage,status=pass;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=pass,note=npm-test-succeeded
+SOURCE_PATHS=deploymentPlan.js,deploymentState.js,deploymentTx.js,subhandleUtils.js
+EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/tests.ts:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability
+LANGUAGE_SUMMARY=nodejs-unit:source_paths=deploymentPlan.js,deploymentState.js,deploymentTx.js,subhandleUtils.js,lines=98.53,branches=93.58,tool=node-test-coverage,status=pass;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=pass,note=npm-test-succeeded
 
 === RAW_OUTPUT_NPM_TEST ===
 
-> cip-68-444-minting@1.0.0 test
+> cip-68-444-minting@1.0.1 test
 > node --test tests/*.test.js && tsx -r dotenv/config tests/tests.ts
 
 TAP version 13
 # Subtest: expected script hash is read from the repo-native compile path
 ok 1 - expected script hash is read from the repo-native compile path
   ---
-  duration_ms: 1.087705
+  duration_ms: 0.957904
   type: 'test'
   ...
 # Subtest: decodes sh_settings CBOR into named YAML fields
 ok 2 - decodes sh_settings CBOR into named YAML fields
   ---
-  duration_ms: 3.050091
+  duration_ms: 5.602563
   type: 'test'
   ...
 # Subtest: fetches live subhandle settings deployment state from the Handles API
 ok 3 - fetches live subhandle settings deployment state from the Handles API
   ---
-  duration_ms: 16.934502
+  duration_ms: 18.680338
   type: 'test'
   ...
 # Subtest: builds a no-change deployment plan when live state matches the desired YAML
 ok 4 - builds a no-change deployment plan when live state matches the desired YAML
   ---
-  duration_ms: 7.765455
+  duration_ms: 8.311679
   type: 'test'
   ...
 # Subtest: builds a script-and-settings deployment plan when both drift
 ok 5 - builds a script-and-settings deployment plan when both drift
   ---
-  duration_ms: 0.326077
+  duration_ms: 0.34901
   type: 'test'
   ...
 # Subtest: marks script drift for manual review when no replacement handle is resolved
 ok 6 - marks script drift for manual review when no replacement handle is resolved
   ---
-  duration_ms: 0.30073
+  duration_ms: 0.30059
   type: 'test'
   ...
-# Subtest: discovers the next available subhandle settings contract SubHandle ordinal from the short deployment slug
-ok 7 - discovers the next available subhandle settings contract SubHandle ordinal from the short deployment slug
+# Subtest: discoverNextContractSubhandle delegates to the canonical Python helper
+ok 7 - discoverNextContractSubhandle delegates to the canonical Python helper
   ---
-  duration_ms: 1.296234
-  type: 'test'
-  ...
-# Subtest: reuses an already minted subhandle-settings replacement handle
-ok 8 - reuses an already minted subhandle-settings replacement handle
-  ---
-  duration_ms: 0.532282
+  duration_ms: 23.04228
   type: 'test'
   ...
 # Subtest: builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
-ok 9 - builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
+ok 8 - builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
   ---
-  duration_ms: 0.486076
+  duration_ms: 0.522713
   type: 'test'
   ...
 # Subtest: rejects unsigned deployment tx artifacts that would exceed max tx size after signing
-ok 10 - rejects unsigned deployment tx artifacts that would exceed max tx size after signing
+ok 9 - rejects unsigned deployment tx artifacts that would exceed max tx size after signing
   ---
-  duration_ms: 0.743233
+  duration_ms: 0.835937
   type: 'test'
   ...
 # Subtest: renders transaction order markdown from generated artifacts
-ok 11 - renders transaction order markdown from generated artifacts
+ok 10 - renders transaction order markdown from generated artifacts
   ---
-  duration_ms: 0.164917
+  duration_ms: 0.385307
+  type: 'test'
+  ...
+# Subtest: fetches live deployment state from every Handles API base URL
+ok 11 - fetches live deployment state from every Handles API base URL
+  ---
+  duration_ms: 24.496459
+  type: 'test'
+  ...
+# Subtest: surfaces live deployment state fetch and payload failures
+ok 12 - surfaces live deployment state fetch and payload failures
+  ---
+  duration_ms: 3.251156
+  type: 'test'
+  ...
+# Subtest: builds a settings-only deployment plan that reuses the existing script handle
+ok 13 - builds a settings-only deployment plan that reuses the existing script handle
+  ---
+  duration_ms: 8.217924
+  type: 'test'
+  ...
+# Subtest: requires a resolved SubHandle before rendering no-change deployment plans
+ok 14 - requires a resolved SubHandle before rendering no-change deployment plans
+  ---
+  duration_ms: 0.285543
+  type: 'test'
+  ...
+# Subtest: discovers SubHandles from ADAHANDLE_DEPLOYMENTS_PATH when no explicit helper is set
+ok 15 - discovers SubHandles from ADAHANDLE_DEPLOYMENTS_PATH when no explicit helper is set
+  ---
+  duration_ms: 22.55329
+  type: 'test'
+  ...
+# Subtest: reports missing canonical SubHandle discovery helper paths
+ok 16 - reports missing canonical SubHandle discovery helper paths
+  ---
+  duration_ms: 0.727124
   type: 'test'
   ...
 # Subtest: loads the preview desired deployment YAML fixture into the normalized shape
-ok 12 - loads the preview desired deployment YAML fixture into the normalized shape
+ok 17 - loads the preview desired deployment YAML fixture into the normalized shape
   ---
-  duration_ms: 15.036336
+  duration_ms: 19.178665
   type: 'test'
   ...
 # Subtest: loads the preprod and mainnet desired deployment YAML fixtures
-ok 13 - loads the preprod and mainnet desired deployment YAML fixtures
+ok 18 - loads the preprod and mainnet desired deployment YAML fixtures
   ---
-  duration_ms: 4.775044
+  duration_ms: 5.365772
   type: 'test'
   ...
 # Subtest: rejects observed-only live fields inside desired deployment YAML
-ok 14 - rejects observed-only live fields inside desired deployment YAML
+ok 19 - rejects observed-only live fields inside desired deployment YAML
   ---
-  duration_ms: 1.824859
+  duration_ms: 2.177715
   type: 'test'
   ...
 # Subtest: rejects deployment handle slugs longer than 10 characters
-ok 15 - rejects deployment handle slugs longer than 10 characters
+ok 20 - rejects deployment handle slugs longer than 10 characters
   ---
-  duration_ms: 1.168055
+  duration_ms: 1.337701
+  type: 'test'
+  ...
+# Subtest: rejects invalid YAML and non-object desired deployment documents
+ok 21 - rejects invalid YAML and non-object desired deployment documents
+  ---
+  duration_ms: 1.001214
+  type: 'test'
+  ...
+# Subtest: rejects invalid top-level deployment identity fields
+ok 22 - rejects invalid top-level deployment identity fields
+  ---
+  duration_ms: 5.755518
+  type: 'test'
+  ...
+# Subtest: rejects invalid build and subhandle strategy sections
+ok 23 - rejects invalid build and subhandle strategy sections
+  ---
+  duration_ms: 4.6067
+  type: 'test'
+  ...
+# Subtest: rejects malformed sh_settings values
+ok 24 - rejects malformed sh_settings values
+  ---
+  duration_ms: 8.132585
+  type: 'test'
+  ...
+# Subtest: normalizes optional legacy script type values
+ok 25 - normalizes optional legacy script type values
+  ---
+  duration_ms: 3.636452
   type: 'test'
   ...
 # Subtest: fetchNetworkParameters loads the requested Helios network config
-ok 16 - fetchNetworkParameters loads the requested Helios network config
+ok 26 - fetchNetworkParameters loads the requested Helios network config
   ---
-  duration_ms: 1.472934
+  duration_ms: 1.613495
   type: 'test'
   ...
 # Subtest: deployment tx generation rejects script addresses as change addresses
-ok 17 - deployment tx generation rejects script addresses as change addresses
+ok 27 - deployment tx generation rejects script addresses as change addresses
   ---
-  duration_ms: 1.724171
+  duration_ms: 1.877095
   type: 'test'
   ...
 # Subtest: deployment tx generation rejects wallets missing the deployment handle input
-ok 18 - deployment tx generation rejects wallets missing the deployment handle input
+ok 28 - deployment tx generation rejects wallets missing the deployment handle input
   ---
-  duration_ms: 2.582661
+  duration_ms: 4.585799
   type: 'test'
   ...
 # Subtest: deployment tx generation finalizes with the handle input selected and spare inputs preserved
-ok 19 - deployment tx generation finalizes with the handle input selected and spare inputs preserved
+ok 29 - deployment tx generation finalizes with the handle input selected and spare inputs preserved
   ---
-  duration_ms: 2.835953
+  duration_ms: 2.971834
   type: 'test'
   ...
 # Subtest: normalizeSubhandle trims and lowercases
-ok 20 - normalizeSubhandle trims and lowercases
+ok 30 - normalizeSubhandle trims and lowercases
   ---
-  duration_ms: 0.787297
+  duration_ms: 0.865121
   type: 'test'
   ...
 # Subtest: toHexUtf8 encodes normalized string as hex
-ok 21 - toHexUtf8 encodes normalized string as hex
+ok 31 - toHexUtf8 encodes normalized string as hex
   ---
-  duration_ms: 0.153657
+  duration_ms: 0.174405
   type: 'test'
   ...
 # Subtest: buildReferenceAssetName prefixes encoded subhandle with 100 label
-ok 22 - buildReferenceAssetName prefixes encoded subhandle with 100 label
+ok 32 - buildReferenceAssetName prefixes encoded subhandle with 100 label
   ---
-  duration_ms: 0.138928
+  duration_ms: 0.155529
   type: 'test'
   ...
 # Subtest: isNonNegativeInt accepts only whole numbers >= 0
-ok 23 - isNonNegativeInt accepts only whole numbers >= 0
+ok 33 - isNonNegativeInt accepts only whole numbers >= 0
   ---
-  duration_ms: 0.132677
+  duration_ms: 0.147315
   type: 'test'
   ...
-1..23
-# tests 23
+1..33
+# tests 33
 # suites 0
-# pass 23
+# pass 33
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 117.677083
+# duration_ms 145.0676
 Warning: way too much collateral
 Warning: way too much collateral
 [32m*success* - APPROVE - MIGRATE                   'Admin signed, settings load'[0m ( mem:333480, cpu:114580058, size:528 )
 [32m*success* - APPROVE - UPDATE_SETTINGS           'Owner signed, settings load'[0m ( mem:347808, cpu:125536448, size:528 )
 INFO (subh:98:11) Missing root handle owner signature
-[32m*success* - DENY    - UPDATE_SETTINGS           'Owner didn't sign'[0m ( mem:0, cpu:0, size:609 )
-INFO (subh:98:11) Missing root handle owner signature
 [32m*success* - DENY    - MIGRATE                   'Owner sig required, didn't sign'[0m ( mem:0, cpu:0, size:609 )
+INFO (subh:98:11) Missing root handle owner signature
+[32m*success* - DENY    - UPDATE_SETTINGS           'Owner didn't sign'[0m ( mem:0, cpu:0, size:609 )
 [34m** SUMMARY **[0m
 [34m    4 total tests[0m
 [32m    4 successful[0m
 
 === RAW_OUTPUT_NODE_UNIT_COVERAGE ===
 TAP version 13
-# Subtest: fetchNetworkParameters loads the requested Helios network config
-ok 1 - fetchNetworkParameters loads the requested Helios network config
+# Subtest: expected script hash is read from the repo-native compile path
+ok 1 - expected script hash is read from the repo-native compile path
   ---
-  duration_ms: 1.703553
+  duration_ms: 1.385459
+  type: 'test'
+  ...
+# Subtest: decodes sh_settings CBOR into named YAML fields
+ok 2 - decodes sh_settings CBOR into named YAML fields
+  ---
+  duration_ms: 3.663382
+  type: 'test'
+  ...
+# Subtest: fetches live subhandle settings deployment state from the Handles API
+ok 3 - fetches live subhandle settings deployment state from the Handles API
+  ---
+  duration_ms: 22.803736
+  type: 'test'
+  ...
+# Subtest: builds a no-change deployment plan when live state matches the desired YAML
+ok 4 - builds a no-change deployment plan when live state matches the desired YAML
+  ---
+  duration_ms: 10.296565
+  type: 'test'
+  ...
+# Subtest: builds a script-and-settings deployment plan when both drift
+ok 5 - builds a script-and-settings deployment plan when both drift
+  ---
+  duration_ms: 0.311059
+  type: 'test'
+  ...
+# Subtest: marks script drift for manual review when no replacement handle is resolved
+ok 6 - marks script drift for manual review when no replacement handle is resolved
+  ---
+  duration_ms: 0.257509
+  type: 'test'
+  ...
+# Subtest: discoverNextContractSubhandle delegates to the canonical Python helper
+ok 7 - discoverNextContractSubhandle delegates to the canonical Python helper
+  ---
+  duration_ms: 24.225744
+  type: 'test'
+  ...
+# Subtest: builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
+ok 8 - builds raw CBOR bytes and a matching hex artifact for the unsigned deployment tx
+  ---
+  duration_ms: 0.53693
+  type: 'test'
+  ...
+# Subtest: rejects unsigned deployment tx artifacts that would exceed max tx size after signing
+ok 9 - rejects unsigned deployment tx artifacts that would exceed max tx size after signing
+  ---
+  duration_ms: 0.745539
+  type: 'test'
+  ...
+# Subtest: renders transaction order markdown from generated artifacts
+ok 10 - renders transaction order markdown from generated artifacts
+  ---
+  duration_ms: 0.152885
+  type: 'test'
+  ...
+# Subtest: fetches live deployment state from every Handles API base URL
+ok 11 - fetches live deployment state from every Handles API base URL
+  ---
+  duration_ms: 29.346631
+  type: 'test'
+  ...
+# Subtest: surfaces live deployment state fetch and payload failures
+ok 12 - surfaces live deployment state fetch and payload failures
+  ---
+  duration_ms: 1.960171
+  type: 'test'
+  ...
+# Subtest: builds a settings-only deployment plan that reuses the existing script handle
+ok 13 - builds a settings-only deployment plan that reuses the existing script handle
+  ---
+  duration_ms: 8.701504
+  type: 'test'
+  ...
+# Subtest: requires a resolved SubHandle before rendering no-change deployment plans
+ok 14 - requires a resolved SubHandle before rendering no-change deployment plans
+  ---
+  duration_ms: 0.294599
+  type: 'test'
+  ...
+# Subtest: discovers SubHandles from ADAHANDLE_DEPLOYMENTS_PATH when no explicit helper is set
+ok 15 - discovers SubHandles from ADAHANDLE_DEPLOYMENTS_PATH when no explicit helper is set
+  ---
+  duration_ms: 21.584524
+  type: 'test'
+  ...
+# Subtest: reports missing canonical SubHandle discovery helper paths
+ok 16 - reports missing canonical SubHandle discovery helper paths
+  ---
+  duration_ms: 0.729228
+  type: 'test'
+  ...
+# Subtest: loads the preview desired deployment YAML fixture into the normalized shape
+ok 17 - loads the preview desired deployment YAML fixture into the normalized shape
+  ---
+  duration_ms: 22.898513
+  type: 'test'
+  ...
+# Subtest: loads the preprod and mainnet desired deployment YAML fixtures
+ok 18 - loads the preprod and mainnet desired deployment YAML fixtures
+  ---
+  duration_ms: 7.8294
+  type: 'test'
+  ...
+# Subtest: rejects observed-only live fields inside desired deployment YAML
+ok 19 - rejects observed-only live fields inside desired deployment YAML
+  ---
+  duration_ms: 3.545735
+  type: 'test'
+  ...
+# Subtest: rejects deployment handle slugs longer than 10 characters
+ok 20 - rejects deployment handle slugs longer than 10 characters
+  ---
+  duration_ms: 1.909826
+  type: 'test'
+  ...
+# Subtest: rejects invalid YAML and non-object desired deployment documents
+ok 21 - rejects invalid YAML and non-object desired deployment documents
+  ---
+  duration_ms: 0.889937
+  type: 'test'
+  ...
+# Subtest: rejects invalid top-level deployment identity fields
+ok 22 - rejects invalid top-level deployment identity fields
+  ---
+  duration_ms: 7.871519
+  type: 'test'
+  ...
+# Subtest: rejects invalid build and subhandle strategy sections
+ok 23 - rejects invalid build and subhandle strategy sections
+  ---
+  duration_ms: 6.626209
+  type: 'test'
+  ...
+# Subtest: rejects malformed sh_settings values
+ok 24 - rejects malformed sh_settings values
+  ---
+  duration_ms: 7.990481
+  type: 'test'
+  ...
+# Subtest: normalizes optional legacy script type values
+ok 25 - normalizes optional legacy script type values
+  ---
+  duration_ms: 4.571875
+  type: 'test'
+  ...
+# Subtest: fetchNetworkParameters loads the requested Helios network config
+ok 26 - fetchNetworkParameters loads the requested Helios network config
+  ---
+  duration_ms: 2.019461
   type: 'test'
   ...
 # Subtest: deployment tx generation rejects script addresses as change addresses
-ok 2 - deployment tx generation rejects script addresses as change addresses
+ok 27 - deployment tx generation rejects script addresses as change addresses
   ---
-  duration_ms: 1.70703
+  duration_ms: 2.1474
   type: 'test'
   ...
 # Subtest: deployment tx generation rejects wallets missing the deployment handle input
-ok 3 - deployment tx generation rejects wallets missing the deployment handle input
+ok 28 - deployment tx generation rejects wallets missing the deployment handle input
   ---
-  duration_ms: 2.869625
+  duration_ms: 5.516183
   type: 'test'
   ...
 # Subtest: deployment tx generation finalizes with the handle input selected and spare inputs preserved
-ok 4 - deployment tx generation finalizes with the handle input selected and spare inputs preserved
+ok 29 - deployment tx generation finalizes with the handle input selected and spare inputs preserved
   ---
-  duration_ms: 2.966275
+  duration_ms: 3.419229
   type: 'test'
   ...
 # Subtest: normalizeSubhandle trims and lowercases
-ok 5 - normalizeSubhandle trims and lowercases
+ok 30 - normalizeSubhandle trims and lowercases
   ---
-  duration_ms: 0.832141
+  duration_ms: 0.978832
   type: 'test'
   ...
 # Subtest: toHexUtf8 encodes normalized string as hex
-ok 6 - toHexUtf8 encodes normalized string as hex
+ok 31 - toHexUtf8 encodes normalized string as hex
   ---
-  duration_ms: 0.233736
+  duration_ms: 0.254103
   type: 'test'
   ...
 # Subtest: buildReferenceAssetName prefixes encoded subhandle with 100 label
-ok 7 - buildReferenceAssetName prefixes encoded subhandle with 100 label
+ok 32 - buildReferenceAssetName prefixes encoded subhandle with 100 label
   ---
-  duration_ms: 0.126084
+  duration_ms: 0.153576
   type: 'test'
   ...
 # Subtest: isNonNegativeInt accepts only whole numbers >= 0
-ok 8 - isNonNegativeInt accepts only whole numbers >= 0
+ok 33 - isNonNegativeInt accepts only whole numbers >= 0
   ---
-  duration_ms: 0.103003
+  duration_ms: 0.122859
   type: 'test'
   ...
-1..8
-# tests 8
+1..33
+# tests 33
 # suites 0
-# pass 8
+# pass 33
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 97.960739
+# duration_ms 178.758933
 # start of coverage report
-# ------------------------------------------------------------------------
-# file                    | line % | branch % | funcs % | uncovered lines
-# ------------------------------------------------------------------------
-# deploymentTx.js         | 100.00 |   100.00 |   83.33 | 
-# subhandleUtils.js       | 100.00 |   100.00 |  100.00 | 
-# tests                   |        |          |         | 
-#  deploymentTx.test.js   |  98.59 |   100.00 |   88.89 | 68 86
-#  subhandleUtils.test.js | 100.00 |   100.00 |  100.00 | 
-# ------------------------------------------------------------------------
-# all files               |  99.15 |   100.00 |   90.63 | 
-# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------
+# file                            | line % | branch % | funcs % | uncovered lines
+# ------------------------------------------------------------------------------------------------------------------
+# deploymentPlan.js               |  95.93 |    87.21 |   95.65 | 26-28 46-47 60-61 166-167 334-335 341-342 348-349
+# deploymentState.js              |  97.97 |    95.16 |  100.00 | 133-134 162-163
+# deploymentTx.js                 | 100.00 |   100.00 |   83.33 | 
+# subhandleUtils.js               | 100.00 |   100.00 |  100.00 | 
+# tests                           |        |          |         | 
+#  deploymentPlan.test.js         | 100.00 |    93.33 |  100.00 | 
+#  deploymentPlanCoverage.test.js |  99.16 |    96.43 |  100.00 | 53-54
+#  deploymentState.test.js        | 100.00 |   100.00 |  100.00 | 
+#  deploymentTx.test.js           |  98.59 |   100.00 |   88.89 | 68 86
+#  subhandleUtils.test.js         | 100.00 |   100.00 |  100.00 | 
+# ------------------------------------------------------------------------------------------------------------------
+# all files                       |  98.53 |    93.58 |   96.80 | 
+# ------------------------------------------------------------------------------------------------------------------
 # end of coverage report
