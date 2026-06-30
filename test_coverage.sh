@@ -23,7 +23,7 @@ if ! npm test > "$TMP_DIR/npm.test.log" 2>&1; then
   fi
 fi
 
-node --test --experimental-test-coverage tests/subhandleUtils.test.js tests/deploymentTx.test.js > "$TMP_DIR/node-unit.coverage.log" 2>&1
+node --test --experimental-test-coverage tests/*.test.js > "$TMP_DIR/node-unit.coverage.log" 2>&1
 
 read -r LINE_COVERAGE BRANCH_COVERAGE < <(
   grep -E "all files" "$TMP_DIR/node-unit.coverage.log" | tail -n 1 | awk -F'\\|' '{
@@ -40,9 +40,9 @@ if [[ -z "${LINE_COVERAGE:-}" || -z "${BRANCH_COVERAGE:-}" ]]; then
 fi
 
 STATUS="pass"
-UTILS_STATUS="pass"
+UNIT_STATUS="pass"
 if awk -v line="$LINE_COVERAGE" -v branch="$BRANCH_COVERAGE" -v tl="$THRESHOLD_LINES" -v tb="$THRESHOLD_BRANCHES" 'BEGIN { exit !((line + 0 < tl) || (branch + 0 < tb)) }'; then
-  UTILS_STATUS="fail"
+  UNIT_STATUS="fail"
   STATUS="fail"
 fi
 
@@ -61,9 +61,9 @@ fi
   echo "TOTAL_LINES_PCT=$LINE_COVERAGE"
   echo "TOTAL_BRANCHES_PCT=$BRANCH_COVERAGE"
   echo "STATUS=$STATUS"
-  echo "SOURCE_PATHS=subhandleUtils.js,deploymentTx.js"
-  echo "EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/{tests.ts,sub_handle_settings_fixtures.ts}:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability"
-  echo "LANGUAGE_SUMMARY=nodejs-unit:source_paths=subhandleUtils.js,deploymentTx.js,lines=$LINE_COVERAGE,branches=$BRANCH_COVERAGE,tool=node-test-coverage,status=$UTILS_STATUS;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=$NPM_TEST_STATUS,note=$NPM_TEST_NOTE"
+  echo "SOURCE_PATHS=deploymentPlan.js,deploymentState.js,deploymentTx.js,subhandleUtils.js"
+  echo "EXCLUDED_PATHS=subh.helios:validator-source-covered-by-scenario-harness-not-branch-measurable-via-node-built-in-coverage; tests/tests.ts:scenario-harness-runtime-paths-depend-on-upstream-datum-response-availability"
+  echo "LANGUAGE_SUMMARY=nodejs-unit:source_paths=deploymentPlan.js,deploymentState.js,deploymentTx.js,subhandleUtils.js,lines=$LINE_COVERAGE,branches=$BRANCH_COVERAGE,tool=node-test-coverage,status=$UNIT_STATUS;nodejs-scenarios:lines=NA,branches=NA,tool=npm-test,status=$NPM_TEST_STATUS,note=$NPM_TEST_NOTE"
   echo
   echo "=== RAW_OUTPUT_NPM_TEST ==="
   cat "$TMP_DIR/npm.test.log"
