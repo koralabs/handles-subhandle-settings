@@ -1,6 +1,6 @@
 import * as helios from "@koralabs/helios";
 import { AssetNameLabel } from "@koralabs/kora-labs-common";
-import { Fixtures, convertJsontoCbor, getAddressAtDerivation, getNewFakeUtxoId, handlesPolicy } from "@koralabs/kora-labs-contract-testing";
+import { Fixtures, convertJsontoCbor, getAddressAtDerivation, getNewFakeUtxoId, handlesPolicy } from "./contractTesting";
 
 export const rootHandleName = 'root_handle';
 export const shAdminHandle = `${AssetNameLabel.LBL_222}${Buffer.from('sh_settings').toString('hex')}`;
