@@ -1,6 +1,6 @@
 import fs from "fs";
 import * as helios from '@koralabs/helios'
-import { Fixtures, ContractTester, Test, getAddressAtDerivation, convertJsontoCbor } from '@koralabs/kora-labs-contract-testing';
+import { ContractTester, Test, getAddressAtDerivation, convertJsontoCbor } from './contractTesting';
 import { SubHandleSettingsFixtures, rootHandleName } from "./sub_handle_settings_fixtures";
 helios.config.set({ IS_TESTNET: false, AUTO_SET_VALIDITY_RANGE: true });
 
