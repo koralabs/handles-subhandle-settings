@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+
+import * as helios from "@koralabs/helios";
 
 import {
   buildSubhandleSettingsDeploymentTxArtifact,
@@ -54,6 +57,29 @@ const desiredState = {
 
 const previewDatum = "9f9f581cb026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465581c0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c581c020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0581cf8923bbf64b7b4409b56733c12406363faf40f51edb2be72fd4d2e09ff9f581cb026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465581c0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c581c020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0ff1a001e84801a004c4b409f9f1a3b9aca000aff9f1b00000002540be4001819ff9f1b0000000ba43b74001828ff9f1b000000174876e8001832ff9f1b000000746a5288001846ff9f1b000000e8d4a510001855ffff583930195bde3deacb613b7e9eb6280b14db4e353e475e96d19f3f7a5e2d66195bde3deacb613b7e9eb6280b14db4e353e475e96d19f3f7a5e2d661b0000000757b12c001b0000000757ac9820ff";
 
+const restoreEnv = (key, value) => {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
+};
+
+const byteArray = (hex) => new helios.ByteArrayData([...Buffer.from(hex, "hex")]);
+const intData = (value) => new helios.IntData(BigInt(value));
+const datumHex = (fields) => Buffer.from(new helios.ListData(fields).toCbor()).toString("hex");
+
+const validDatumFields = () => [
+  new helios.ListData([byteArray("01")]),
+  new helios.ListData([byteArray("02")]),
+  intData(1),
+  intData(2),
+  new helios.ListData([new helios.ListData([intData(3), intData(4)])]),
+  byteArray("05"),
+  intData(6),
+  intData(7),
+];
+
 test("expected script hash is read from the repo-native compile path", () => {
   const hash = buildExpectedSubhandleSettingsScriptHash({
     compileFn: () => "ab".repeat(28),
@@ -62,12 +88,51 @@ test("expected script hash is read from the repo-native compile path", () => {
   assert.equal(hash, "ab".repeat(28));
 });
 
+test("expected script hash compiles from the repo-native validator source", () => {
+  const hash = buildExpectedSubhandleSettingsScriptHash();
+
+  assert.match(hash, /^[0-9a-f]{56}$/);
+});
+
 test("decodes sh_settings CBOR into named YAML fields", () => {
   const decoded = decodeShSettingsDatum(previewDatum);
 
   assert.equal(decoded.virtual_price, 2000000);
   assert.deepEqual(decoded.buy_down_prices[0], [1000000000, 10]);
   assert.equal(decoded.payment_address.startsWith("30195bde"), true);
+});
+
+test("rejects malformed sh_settings datum shapes", () => {
+  assert.throws(
+    () => decodeShSettingsDatum(datumHex(validDatumFields().slice(0, 7))),
+    /sh_settings datum must contain 8 fields, received 7/
+  );
+
+  assert.throws(
+    () => decodeShSettingsDatum(Buffer.from(new helios.IntData(1n).toCbor()).toString("hex")),
+    /not a list/
+  );
+
+  const nonByteArrayContract = validDatumFields();
+  nonByteArrayContract[0] = new helios.ListData([intData(1)]);
+  assert.throws(
+    () => decodeShSettingsDatum(datumHex(nonByteArrayContract)),
+    /valid_contracts item must decode to a byte array/
+  );
+
+  const nonIntVirtualPrice = validDatumFields();
+  nonIntVirtualPrice[2] = byteArray("01");
+  assert.throws(
+    () => decodeShSettingsDatum(datumHex(nonIntVirtualPrice)),
+    /virtual_price must decode to an int/
+  );
+
+  const shortBuyDownPair = validDatumFields();
+  shortBuyDownPair[4] = new helios.ListData([new helios.ListData([intData(3)])]);
+  assert.throws(
+    () => decodeShSettingsDatum(datumHex(shortBuyDownPair)),
+    /buy_down_prices\[0\] must contain exactly two ints/
+  );
 });
 
 test("fetches live subhandle settings deployment state from the Handles API", async () => {
@@ -180,7 +245,30 @@ test("discoverNextContractSubhandle delegates to the canonical Python helper", a
     });
     assert.equal(subhandle, "subh1@handlecontract");
   } finally {
-    process.env.DISCOVER_SUBHANDLES_PATH = origPath;
+    restoreEnv("DISCOVER_SUBHANDLES_PATH", origPath);
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("surfaces empty SubHandle discovery helper output", async () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "discover-empty-stub-"));
+  const stubPath = path.join(tmpDir, "discover_subhandles.py");
+  fs.writeFileSync(stubPath, "#!/usr/bin/env python3\n", { mode: 0o755 });
+  const origPath = process.env.DISCOVER_SUBHANDLES_PATH;
+  process.env.DISCOVER_SUBHANDLES_PATH = stubPath;
+  try {
+    await assert.rejects(
+      discoverNextContractSubhandle({
+        network: "preview",
+        deploymentHandleSlug: "subh",
+        namespace: "handlecontract",
+        currentSubhandle: null,
+        userAgent: "codex-test",
+      }),
+      /discover_subhandles.py returned empty stdout for subh@handlecontract/
+    );
+  } finally {
+    restoreEnv("DISCOVER_SUBHANDLES_PATH", origPath);
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });

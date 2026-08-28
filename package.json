@@ -1,6 +1,6 @@
 {
     "name": "cip-68-444-minting",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "",
     "type": "module",
     "scripts": {
@@ -10,10 +10,9 @@
     "devDependencies": {
         "@koralabs/helios": "0.16.8-1",
         "@koralabs/kora-labs-common": "^4.0.7",
-        "@koralabs/kora-labs-contract-testing": "0.0.2",
         "@types/node": "^20.0",
         "dotenv": "^16.4.5",
-        "tsx": "^4.21.0"
+        "tsx": "^4.22.4"
     },
     "resolutions": {
         "bn.js": "5.2.3"

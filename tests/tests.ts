@@ -1,6 +1,6 @@
 import fs from "fs";
 import * as helios from '@koralabs/helios'
-import { Fixtures, ContractTester, Test, getAddressAtDerivation, convertJsontoCbor } from '@koralabs/kora-labs-contract-testing';
+import { ContractTester, Test, getAddressAtDerivation, convertJsontoCbor } from './contractTesting';
 import { SubHandleSettingsFixtures, rootHandleName } from "./sub_handle_settings_fixtures";
 helios.config.set({ IS_TESTNET: false, AUTO_SET_VALIDITY_RANGE: true });
 
@@ -12,7 +12,10 @@ const runTests = async (file: string) => {
     let fixtures = await (new SubHandleSettingsFixtures(contract.validatorHash).initialize());
     const walletAddress = await getAddressAtDerivation(0);
     const tester = new ContractTester(walletAddress);
-    await tester.init();
+    // Keep the local contract tests offline; ContractTester.init fetches remote protocol params.
+    tester.networkParams = new helios.NetworkParams(
+        (helios as typeof helios & { rawNetworkEmulatorParams: object }).rawNetworkEmulatorParams
+    );
     
     const migrateRedeemer = await convertJsontoCbor({constructor_1: [rootHandleName]});
     const migrateFixtures = await (new SubHandleSettingsFixtures(contract.validatorHash).initialize()) 
