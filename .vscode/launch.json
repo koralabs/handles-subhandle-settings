@@ -1,0 +1,10 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "heliosdebugger",
+      "request": "launch",
+      "name": "Helios: Run Current"
+    }
+  ]
+}
