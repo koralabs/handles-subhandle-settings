@@ -76,7 +76,11 @@ test("loads the preprod and mainnet desired deployment YAML fixtures", async () 
   assert.equal(mainnet.network, "mainnet");
   assert.equal(preprod.assignedHandles.scripts[0], "subhsetcont_003");
   assert.equal(mainnet.assignedHandles.scripts[0], "sub_settings_01");
-  assert.equal(preprod.settings.values.sh_settings.valid_contracts.length, 3);
+  // Labeled-root rollout: the BURN-capable subh is added while the current version stays valid, so existing
+  // 001s keep validating until they are migrated.
+  assert.equal(preprod.settings.values.sh_settings.valid_contracts.length, 4);
+  assert.ok(preprod.settings.values.sh_settings.valid_contracts.includes("e14768e95dab346bc635059f512ec9fb09ac6be25d3fda9933bcb581"));
+  assert.ok(preprod.settings.values.sh_settings.valid_contracts.includes("020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0"));
   assert.equal(mainnet.settings.values.sh_settings.admin_creds.length, 1);
 });
 

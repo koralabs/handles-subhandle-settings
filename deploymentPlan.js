@@ -25,7 +25,9 @@ const handlesApiBaseUrlForNetwork = (network) => {
 export const compileSubhandleSettingsValidator = () => {
   const source = fs.readFileSync("./subh.helios", "utf8");
   const program = helios.Program.new(source);
-  return program.compile().validatorHash.hex;
+  // On-chain subh is the OPTIMIZED build (the unmodified source's optimized hash 020c5d23 is the one in every
+  // network's sh_settings valid_contracts; the unoptimized c814d96a is deployed nowhere).
+  return program.compile(true).validatorHash.hex;
 };
 
 export const buildExpectedSubhandleSettingsScriptHash = ({

@@ -8,7 +8,7 @@
     },
     "license": "unlicense",
     "devDependencies": {
-        "@koralabs/helios": "0.16.8-1",
+        "@koralabs/helios": "github:koralabs/helios#bb118b10b48e722be2d732e58072192e145d0939",
         "@koralabs/kora-labs-common": "^4.0.7",
         "@types/node": "^20.0",
         "dotenv": "^16.4.5",

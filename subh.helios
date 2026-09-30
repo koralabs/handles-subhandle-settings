@@ -7,6 +7,11 @@ enum Redeemer {
     MIGRATE { 
         handle: ByteArray 
     }
+    // Labeled-root teardown (decentralized-minting docs/spec/root-burn-with-labels.md): the 001 may only
+    // leave this contract by being burned together with its root's 222 in the same transaction.
+    BURN {
+        handle: ByteArray
+    }
 }
 
 // sh_settings
@@ -106,6 +111,19 @@ func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings
     admin_has_signed_tx(settings, ctx) && (owner_settings.migrate_sig_required == 0 || owner_has_signed_tx(handle, ctx))
 }
 
+// The spent UTxO must hold exactly this root's 001 (plus ADA): spending unlocks the whole UTxO, so any other
+// asset riding along would escape the burn. Both the 001 and the root's 222 must be burned (-1) in this tx;
+// the root owner's authority comes from the handle policy that burns the 222.
+func label_burned_with_root(handle: ByteArray, ctx: ScriptContext) -> Bool {
+    label: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_001 + handle);
+    root: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_222 + handle);
+    spent: Value = ctx.get_current_input().output.value;
+    assert(spent.get_assets() == Value::new(label, 1), "Spent UTxO must hold exactly this root's 001");
+    assert(ctx.tx.minted.get_safe(label) == -1, "001 not burned");
+    assert(ctx.tx.minted.get_safe(root) == -1, "Root 222 not burned");
+    true
+}
+
 func main(_, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
     redeemer.switch {
         r: UPDATE_SETTINGS => {
@@ -118,6 +136,9 @@ func main(_, redeemer: Redeemer, ctx: ScriptContext) -> Bool {
             (admin_settings: AdminSettings, owner_settings: OwnerSettings, _) = load_settings(m.handle, ctx);
             assert(migration_signers_are_valid(m.handle, ctx, admin_settings, owner_settings), "Not a valid migration");
             true
+        },
+        b: BURN => {
+            label_burned_with_root(b.handle, ctx)
         },
         else => {
             false

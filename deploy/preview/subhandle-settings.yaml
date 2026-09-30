@@ -26,6 +26,8 @@ settings:
         - 0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c
         - 020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0
         - f8923bbf64b7b4409b56733c12406363faf40f51edb2be72fd4d2e09
+        # subh with BURN (labeled-root teardown, decentralized-minting docs/spec/root-burn-with-labels.md)
+        - e14768e95dab346bc635059f512ec9fb09ac6be25d3fda9933bcb581
       admin_creds:
         - b026528c4d6cc77d4527f8ab794651d0aa3ef2dc06e4f5d7d36c3465
         - 0297c358427a84608418ef3501a41cd600cfa1361be2e28998ace35c
