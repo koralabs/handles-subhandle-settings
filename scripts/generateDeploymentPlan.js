@@ -55,7 +55,8 @@ const main = async () => {
   const expectedScriptHash = buildExpectedSubhandleSettingsScriptHash();
   const live = await fetchLiveSubhandleSettingsDeploymentState({
     network: desired.network,
-    scriptType: desired.oldScriptType ?? desired.scriptType,
+    scriptType: desired.scriptType,
+    fallbackScriptType: desired.oldScriptType,
     userAgent,
   });
   const plan = buildSubhandleSettingsDeploymentPlan({

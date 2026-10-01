@@ -72,19 +72,35 @@ export const decodeShSettingsDatum = (datumHex) => {
 export const fetchLiveSubhandleSettingsDeploymentState = async ({
   network,
   scriptType,
+  fallbackScriptType,
   userAgent,
   fetchFn = fetch,
 }) => {
   const baseUrl = handlesApiBaseUrlForNetwork(network);
   const headers = { "User-Agent": userAgent };
-  const scriptResponse = await fetchFn(
-    `${baseUrl}/scripts?latest=true&type=${encodeURIComponent(scriptType)}`,
-    { headers }
-  );
-  if (!scriptResponse.ok) {
-    throw new Error(`failed to load live subhandle settings script: HTTP ${scriptResponse.status}`);
+  const fetchScripts = async (type) => {
+    const response = await fetchFn(
+      `${baseUrl}/scripts?latest=true&type=${encodeURIComponent(type)}`,
+      { headers }
+    );
+    if (!response.ok) {
+      throw new Error(`failed to load live subhandle settings script: HTTP ${response.status}`);
+    }
+    return response.json();
+  };
+  // Scripts are registered under the current type (`subh`); a network not yet migrated answers `{}` for it,
+  // so fall back to the old type (`sub_handle_settings`) only then.
+  let rawScriptPayload = await fetchScripts(scriptType);
+  const isEmpty = (payload) => payload && typeof payload === "object" && Object.keys(payload).length === 0;
+  if (isEmpty(rawScriptPayload) && fallbackScriptType && fallbackScriptType !== scriptType) {
+    rawScriptPayload = await fetchScripts(fallbackScriptType);
   }
-  const scriptPayload = await scriptResponse.json();
+  // The api answers `/scripts?latest=true` keyed by script address ({ "<addr>": { validatorHash, ... } });
+  // older responses were the script object itself. Accept both.
+  const scriptPayload =
+    rawScriptPayload && (rawScriptPayload.validatorHash || rawScriptPayload.scriptHash)
+      ? rawScriptPayload
+      : Object.values(rawScriptPayload ?? {})[0] ?? {};
   const currentScriptHash = String(
     scriptPayload.validatorHash ?? scriptPayload.scriptHash ?? ""
   ).trim();
@@ -98,7 +114,10 @@ export const fetchLiveSubhandleSettingsDeploymentState = async ({
   }
   const handlePayload = await handleResponse.json();
 
-  const datumResponse = await fetchFn(`${baseUrl}/handles/${SETTINGS_HANDLE}/datum`, { headers });
+  // The api answers /datum as decoded JSON by default; the planner diffs the raw CBOR, so ask for it.
+  const datumResponse = await fetchFn(`${baseUrl}/handles/${SETTINGS_HANDLE}/datum`, {
+    headers: { ...headers, Accept: "application/cbor" },
+  });
   if (!datumResponse.ok) {
     throw new Error(`failed to load datum for ${SETTINGS_HANDLE}: HTTP ${datumResponse.status}`);
   }

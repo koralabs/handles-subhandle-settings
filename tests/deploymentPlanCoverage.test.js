@@ -237,3 +237,82 @@ test('reports missing canonical SubHandle discovery helper paths', async () => {
     fs.rmSync(parentDir, { recursive: true, force: true });
   }
 });
+
+// The api now answers `/scripts?latest=true` keyed by script address (observed on preview 2026-09-30:
+// { "addr_test1wqpq…": { type: "subh", handle: "subh1@handlecontract", validatorHash: "020c5d23…", latest: true } }).
+// Failure mode: the planner read only a top-level validatorHash and failed every live plan with
+// "missing validatorHash/scriptHash". Negative control: drop the address-keyed fallback and this test throws.
+test('reads the live script hash from the address-keyed /scripts?latest=true response', async () => {
+  const live = await fetchLiveSubhandleSettingsDeploymentState({
+    network: 'preview',
+    scriptType: 'subh',
+    userAgent: 'codex-test',
+    fetchFn: async (url) => {
+      if (String(url).includes('/scripts?')) {
+        return new Response(JSON.stringify({
+          addr_test1wqpqchfrcwqg0tsqdcqeym962llsqg3g070xltlt3ydh0gqpln58s: {
+            type: 'subh',
+            handle: 'subh1@handlecontract',
+            validatorHash: '020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0',
+            latest: true,
+          },
+        }), { status: 200 });
+      }
+      if (String(url).endsWith('/datum')) return new Response(previewDatum, { status: 200 });
+      return okHandleResponse();
+    },
+  });
+  assert.equal(live.currentScriptHash, '020c5d23c38087ae006e01926cba57ff0022287f9e6fafeb891b77a0');
+});
+
+// Scripts are registered under the current type (`subh`); the old type (`sub_handle_settings`) now answers `{}`.
+// Failure mode: the planner queried the old type first and got nothing. Negative control: query
+// oldScriptType first (the previous behavior) and this test fails.
+test('queries the current script type and falls back to the old type only when it is empty', async () => {
+  const requested = [];
+  const fetchFn = (registered) => async (url) => {
+    const u = String(url);
+    if (u.includes('/scripts?')) {
+      const type = new URL(u).searchParams.get('type');
+      requested.push(type);
+      return new Response(JSON.stringify(type === registered
+        ? { addr_test1wqpq: { type, validatorHash: 'cd'.repeat(28), latest: true } }
+        : {}), { status: 200 });
+    }
+    if (u.endsWith('/datum')) return new Response(previewDatum, { status: 200 });
+    return okHandleResponse();
+  };
+  const current = await fetchLiveSubhandleSettingsDeploymentState({
+    network: 'preview', scriptType: 'subh', fallbackScriptType: 'sub_handle_settings', userAgent: 'codex-test', fetchFn: fetchFn('subh'),
+  });
+  assert.equal(current.currentScriptHash, 'cd'.repeat(28));
+  assert.deepEqual(requested, ['subh']);
+  requested.length = 0;
+  const legacy = await fetchLiveSubhandleSettingsDeploymentState({
+    network: 'preview', scriptType: 'subh', fallbackScriptType: 'sub_handle_settings', userAgent: 'codex-test', fetchFn: fetchFn('sub_handle_settings'),
+  });
+  assert.equal(legacy.currentScriptHash, 'cd'.repeat(28));
+  assert.deepEqual(requested, ['subh', 'sub_handle_settings']);
+});
+
+// The api's /datum defaults to decoded JSON; the planner needs the raw CBOR hex (it failed live with
+// `invalid hexstring "[["0xb026…`). Negative control: drop the Accept header and this test fails.
+test('requests the settings datum as CBOR', async () => {
+  let datumHeaders;
+  await fetchLiveSubhandleSettingsDeploymentState({
+    network: 'preview',
+    scriptType: 'subh',
+    userAgent: 'codex-test',
+    fetchFn: async (url, init) => {
+      const u = String(url);
+      if (u.includes('/scripts?')) return okScriptResponse();
+      if (u.endsWith('/datum')) {
+        datumHeaders = init?.headers;
+        return new Response(previewDatum, { status: 200 });
+      }
+      return okHandleResponse();
+    },
+  });
+  assert.equal(datumHeaders?.Accept, 'application/cbor');
+  assert.equal(datumHeaders?.['User-Agent'], 'codex-test');
+});
