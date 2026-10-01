@@ -47,6 +47,9 @@ struct OwnerSettings {
 }
 
 const HANDLE_POLICY: MintingPolicyHash = MintingPolicyHash::new(#f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a)
+// DeMi policy (demi@handle_settings policy_id; identical on preview, preprod and mainnet). Roots and labels can live
+// under either policy, including cross-pollinated pairs (an f0ff label under a DeMi 222).
+const DEMI_POLICY: MintingPolicyHash = MintingPolicyHash::new(#6c32db33a422e0bc2cb535bb850b5a6e9a9572222056d6ddc9cbc26e)
 const LBL_001: ByteArray = #00001070 // (001)
 const LBL_222: ByteArray = #000de140 // (222)
 const SETTINGS_HANDLE: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_222 + ("sh_settings".encode_utf8()))
@@ -111,16 +114,24 @@ func migration_signers_are_valid(handle: ByteArray, ctx: ScriptContext, settings
     admin_has_signed_tx(settings, ctx) && (owner_settings.migrate_sig_required == 0 || owner_has_signed_tx(handle, ctx))
 }
 
-// The spent UTxO must hold exactly this root's 001 (plus ADA): spending unlocks the whole UTxO, so any other
-// asset riding along would escape the burn. Both the 001 and the root's 222 must be burned (-1) in this tx;
-// the root owner's authority comes from the handle policy that burns the 222.
+// The spent UTxO must hold exactly this root's 001 (under the legacy or the DeMi policy) plus ADA: spending
+// unlocks the whole UTxO, so nothing else may ride along. That 001 must be burned (-1) under its policy and the
+// root's 222 must be burned (-1) under whichever policy holds it, in this tx. The owner's authority comes from
+// the policy that burns the 222 (legacy policy key / DeMi governor + minter).
 func label_burned_with_root(handle: ByteArray, ctx: ScriptContext) -> Bool {
-    label: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_001 + handle);
-    root: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_222 + handle);
-    spent: Value = ctx.get_current_input().output.value;
-    assert(spent.get_assets() == Value::new(label, 1), "Spent UTxO must hold exactly this root's 001");
+    legacy_label: AssetClass = AssetClass::new(HANDLE_POLICY, LBL_001 + handle);
+    demi_label: AssetClass = AssetClass::new(DEMI_POLICY, LBL_001 + handle);
+    spent: Value = ctx.get_current_input().output.value.get_assets();
+    label: AssetClass = if (spent == Value::new(legacy_label, 1)) {
+        legacy_label
+    } else if (spent == Value::new(demi_label, 1)) {
+        demi_label
+    } else {
+        error("Spent UTxO must hold exactly this root's 001")
+    };
     assert(ctx.tx.minted.get_safe(label) == -1, "001 not burned");
-    assert(ctx.tx.minted.get_safe(root) == -1, "Root 222 not burned");
+    assert(ctx.tx.minted.get_safe(AssetClass::new(HANDLE_POLICY, LBL_222 + handle)) == -1
+        || ctx.tx.minted.get_safe(AssetClass::new(DEMI_POLICY, LBL_222 + handle)) == -1, "Root 222 not burned");
     true
 }
 
