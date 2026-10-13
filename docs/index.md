@@ -11,3 +11,6 @@
 - [Technical Spec](./spec/spec.md)
 - [Contract Deployment Pipeline](./spec/contract-deployment-pipeline.md)
 - [Datum Model](./spec/datum-model.md)
+
+## Canonical contract
+- [Canonical contract (must-never-violate rules)](../CANONICAL_CONTRACT.md)
