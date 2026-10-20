@@ -133,7 +133,7 @@
 
 "@koralabs/helios@0.16.8-1":
   version "0.16.8-1"
-  resolved "https://registry.npmjs.org/@koralabs/helios/-/helios-0.16.8-1.tgz"
+  resolved "https://npm.pkg.github.com/download/@koralabs/helios/0.16.8-1/69a0f2c75a14e37d221a62457208ae0f09f628d8"
   integrity sha512-/pbL4lUP7CBELSxfMuZUhJ5rZ5B3T+kwaQ4joI9y+SDMFyfqySARcgv5+uTT1nnTd/gCgM3QzMUZBOL8BMM3AA==
 
 "@koralabs/kora-labs-common@^4.0.7":
