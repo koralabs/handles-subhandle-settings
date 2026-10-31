@@ -11,3 +11,6 @@
 - [Technical Spec](./spec/spec.md)
 - [Contract Deployment Pipeline](./spec/contract-deployment-pipeline.md)
 - [Datum Model](./spec/datum-model.md)
+
+## Policy proposals (not active)
+- [Canonical contract and enclave draft](./proposals/phase5-handles-subhandle-settings/README.md): operator review required.
