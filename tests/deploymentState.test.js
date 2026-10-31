@@ -237,6 +237,15 @@ test("rejects malformed sh_settings values", () => {
       yaml: validDesiredStateYaml().replace("      buy_down_prices: []", "      buy_down_prices: [[1, nope]]"),
       pattern: /buy_down_prices\[0\] must contain exactly two numbers/,
     },
+    {
+      yaml: validDesiredStateYaml().replace("      buy_down_prices: []", "      buy_down_prices: nope"),
+      pattern: /must include array field `buy_down_prices`/,
+    },
+    {
+      // A blank payment address must not normalize to "" and reach the settings datum.
+      yaml: validDesiredStateYaml().replace("      payment_address: aa", '      payment_address: "  "'),
+      pattern: /must include string field `payment_address`/,
+    },
   ];
 
   for (const { yaml, pattern } of cases) {
