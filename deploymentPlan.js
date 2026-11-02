@@ -82,10 +82,12 @@ export const fetchLiveSubhandleSettingsDeploymentState = async ({
   if (!scriptResponse.ok) {
     throw new Error(`failed to load live subhandle settings script: HTTP ${scriptResponse.status}`);
   }
-  const scriptPayload = await scriptResponse.json();
-  const currentScriptHash = String(
-    scriptPayload.validatorHash ?? scriptPayload.scriptHash ?? ""
-  ).trim();
+  // /scripts is keyed by script address and `type` is a prefix match, so pick this
+  // script's own latest entry.
+  const scriptPayload = Object.values(await scriptResponse.json()).find(
+    (entry) => entry.type === scriptType && entry.latest
+  );
+  const currentScriptHash = String(scriptPayload?.validatorHash ?? "").trim();
   if (!currentScriptHash) {
     throw new Error("live subhandle settings script response missing validatorHash/scriptHash");
   }
@@ -96,7 +98,10 @@ export const fetchLiveSubhandleSettingsDeploymentState = async ({
   }
   const handlePayload = await handleResponse.json();
 
-  const datumResponse = await fetchFn(`${baseUrl}/handles/${SETTINGS_HANDLE}/datum`, { headers });
+  const datumResponse = await fetchFn(`${baseUrl}/handles/${SETTINGS_HANDLE}/datum`, {
+    // The API decodes the datum to JSON by default; the planner needs the raw CBOR hex.
+    headers: { ...headers, Accept: "text/plain" },
+  });
   if (!datumResponse.ok) {
     throw new Error(`failed to load datum for ${SETTINGS_HANDLE}: HTTP ${datumResponse.status}`);
   }
