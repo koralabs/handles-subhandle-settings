@@ -9,7 +9,7 @@
     "license": "unlicense",
     "devDependencies": {
         "@koralabs/helios": "0.16.8-1",
-        "@koralabs/kora-labs-common": "^4.0.7",
+        "@koralabs/kora-labs-common": "^6.21.6",
         "@types/node": "^20.0",
         "dotenv": "^16.4.5",
         "tsx": "^4.22.4"
