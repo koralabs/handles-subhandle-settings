@@ -44,6 +44,9 @@ jobs:
           node-version: "22.13"
           check-latest: true
 
+      - name: Authenticate GitHub Packages
+        run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.DEPLOYMENT_ACCESS_TOKEN }}
+
       - name: Install dependencies
         run: npm install
 
