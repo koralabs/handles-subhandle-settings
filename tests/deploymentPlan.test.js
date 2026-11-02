@@ -139,14 +139,13 @@ test("fetches live subhandle settings deployment state from the Handles API", as
   const requests = [];
   const live = await fetchLiveSubhandleSettingsDeploymentState({
     network: "preview",
-    scriptType: desiredState.oldScriptType ?? desiredState.scriptType,
+    scriptType: desiredState.scriptType,
     userAgent: "codex-test",
     fetchFn: async (url, init) => {
       requests.push({ url: String(url), headers: init?.headers });
-      if (String(url).includes("/scripts?latest=true&type=sub_handle_settings")) {
+      if (String(url).includes("/scripts?latest=true&type=subh")) {
         return new Response(JSON.stringify({
-          validatorHash: "ab".repeat(28),
-          handle: "subhsetcont_003",
+          addr_live: { type: "subh", latest: true, validatorHash: "ab".repeat(28), handle: "subhsetcont_003" },
         }), { status: 200 });
       }
       if (String(url).endsWith("/datum")) {
@@ -160,7 +159,7 @@ test("fetches live subhandle settings deployment state from the Handles API", as
   assert.equal(live.currentSubhandle, "subhsetcont_003");
   assert.deepEqual(live.currentSettingsUtxoRefs, { sh_settings: "tx#0" });
   assert.equal(live.settings.sh_settings.virtual_price, 2000000);
-  assert.equal(requests[0].url, "https://preview.api.handle.me/scripts?latest=true&type=sub_handle_settings");
+  assert.equal(requests[0].url, "https://preview.api.handle.me/scripts?latest=true&type=subh");
 });
 
 test("builds a no-change deployment plan when live state matches the desired YAML", () => {
